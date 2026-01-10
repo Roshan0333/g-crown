@@ -74,9 +74,9 @@ export default function Footer() {
               that tells your unique story.
             </p>
             <div className="flex items-center gap-4">
-              <SocialIcon Icon={FaFacebookF} label="Facebook" href="https://facebook.com" />
-              <SocialIcon Icon={FaInstagram} label="Instagram" href="https://instagram.com" />
-              <SocialIcon Icon={FaTwitter} label="Twitter" href="https://twitter.com" />
+              <SocialIcon Icon={FaFacebookF} label="Facebook" href="https://www.facebook.com/share/19nKAMTopZ/" />
+              <SocialIcon Icon={FaInstagram} label="Instagram" href="https://www.instagram.com/graphura.in?igsh=MXNqNmtidzljNDJlag==" />
+              <SocialIcon Icon={FaTwitter} label="Twitter" href="https://share.google/w9KeZZ72v8KQxGpFn" />
             </div>
           </section>
 

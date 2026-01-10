@@ -13,7 +13,7 @@ export default function FindStore() {
       aria-label="Find Store Page"
     >
       {/* ===== HERO / SEARCH BANNER ===== */}
-      <header className="relative overflow-hidden bg-[radial-gradient(circle_at_center,#4A9874_0%,#1C3A2C_100%)] py-20 lg:py-28">
+      <header className="relative overflow-hidden bg-[radial-gradient(circle_at_center,#26483a_0%,#1C3A2C_100%)] py-20 lg:py-28">
         {/* Subtle vignette */}
         <div
           aria-hidden="true"
