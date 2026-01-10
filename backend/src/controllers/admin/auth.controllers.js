@@ -20,7 +20,7 @@ const Signup = async (req, res) => {
         customerDetail.password = undefined;
         customerDetail.contact = undefined;
 
-        cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, customerDetail)
 
         return res.status(200).json(new ApiResponse(200, null, "Registration Successful"));
     }
@@ -35,7 +35,7 @@ const Login = async (req, res) => {
 
         const customerDetail = await auth_Model.findOne({ email: email });
 
-        const decryptPassword = decryptPasswordMethod(password, customerDetail.password);
+        const decryptPassword = await decryptPasswordMethod(password, customerDetail.password);
 
         if (!decryptPassword) {
             return res.status(401).json(new ApiError(401, "Incorrect Password"));
@@ -44,7 +44,7 @@ const Login = async (req, res) => {
         customerDetail.password = undefined;
         customerDetail.contact = undefined;
 
-        cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, customerDetail)
         return res.status(200).json(new ApiResponse(200, null, "Access Granted"));
     }
     catch (err) {
@@ -66,7 +66,9 @@ const ForgotPassword = async (req, res) => {
         customerDetail.password = undefined;
         customerDetail.contact = undefined;
 
-        cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, customerDetail)
+
+        return res.status(200).json(new ApiResponse(200, null, "Password Change Successfully."));
 
     }
     catch (err) {
@@ -74,4 +76,4 @@ const ForgotPassword = async (req, res) => {
     }
 }
 
-export {Signup, Login, ForgotPassword};
+export { Signup, Login, ForgotPassword };
