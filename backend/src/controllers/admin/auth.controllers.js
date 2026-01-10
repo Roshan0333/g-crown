@@ -1,4 +1,4 @@
-import auth_Model from "../../models/customer/user.model.js";
+import auth_Model from "../../models/admin/user.models.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
 import { encryptPasswordMethod, decryptPasswordMethod } from "../../utils/passwordEncrypt&passwordDecrypt.js";
