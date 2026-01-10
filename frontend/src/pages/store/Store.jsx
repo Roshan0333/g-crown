@@ -1,0 +1,126 @@
+import React from "react";
+import { MapPin } from "lucide-react";
+import leftJewelry from "../../assets/storePage/leftJewelry.png";
+import rightJewelry from "../../assets/storePage/rightJewelry.png";
+import storeImg from "../../assets/storePage/storeImg.jpg";
+
+const stores = Array.from({ length: 6 });
+
+export default function FindStore() {
+  return (
+    <section
+      className="bg-[#FBF6EA] font-cormorant overflow-x-hidden selection:bg-[#08221B] selection:text-[#E6C77B]"
+      aria-label="Find Store Page"
+    >
+      {/* ===== HERO / SEARCH BANNER ===== */}
+      <header className="relative overflow-hidden bg-[radial-gradient(circle_at_center,#4A9874_0%,#1C3A2C_100%)] py-20 lg:py-28">
+        {/* Subtle vignette */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05),transparent_70%)]"
+        />
+
+        {/* Decorative Jewelry */}
+        <img
+          src={leftJewelry}
+          alt=""
+          aria-hidden="true"
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-[320px] lg:h-[450px] opacity-90 object-contain"
+        />
+        <img
+          src={rightJewelry}
+          alt=""
+          aria-hidden="true"
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-[320px] lg:h-[450px] opacity-90 object-contain"
+        />
+
+        {/* Search Content */}
+        <div className="relative z-10 mx-auto max-w-xl px-6 text-center">
+          <h1 className="text-[40px] md:text-[54px] text-[#CBA135] leading-tight mb-8 font-light">
+            Find a <span className="italic">G-Crown</span> Store
+          </h1>
+
+          <form className="space-y-4" role="search">
+            <input
+              type="text"
+              placeholder="Enter city / pincode / locality"
+              className="w-full bg-white px-6 py-4 text-center text-[17px] text-[#08221B] placeholder:text-gray-500 outline-none shadow-inner focus:ring-2 focus:ring-[#CBA135]"
+            />
+
+            <button
+              type="submit"
+              className="bg-gradient-to-r from-[#B49148] via-[#FFE577] to-[#BB9344] px-14 py-2.5 text-lg font-semibold text-[#08221B] shadow-lg transition hover:brightness-110 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#CBA135]"
+            >
+              Check
+            </button>
+          </form>
+        </div>
+      </header>
+
+      {/* ===== FOUND COUNT ===== */}
+      <div className="py-16 flex justify-center">
+        <div className="relative px-12 text-center">
+          <span className="absolute left-0 top-1/2 h-[2px] w-8 bg-[#B1924E] -translate-y-1/2" />
+          <h2 className="text-3xl md:text-[32px] text-[#08221B] font-medium">
+            Found <span className="text-[#C9A24D]">30</span> stores near you
+          </h2>
+          <span className="absolute right-0 top-1/2 h-[2px] w-8 bg-[#B1924E] -translate-y-1/2" />
+        </div>
+      </div>
+
+      {/* ===== STORE LIST ===== */}
+      <div className="mx-auto max-w-7xl px-6 pb-24">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-3">
+          {stores.map((_, i) => (
+            <article
+              key={i}
+              className="group bg-[#FBF6EA] border border-[#D6C8A5] shadow-[0_4px_20px_rgba(0,0,0,0.05)] transition hover:shadow-xl"
+            >
+              {/* Store Image */}
+              <div className="relative h-[240px] overflow-hidden">
+                <img
+                  src={storeImg}
+                  alt="G-Crown Store Interior"
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              </div>
+
+              {/* Details */}
+              <div className="p-6 space-y-4 font-sans">
+                <h3 className="text-xl font-semibold italic text-[#08221B] border-b border-gray-200 pb-2">
+                  G-Crown – Gurgaon
+                </h3>
+
+                <p className="text-[14px] text-[#5F5F5F] leading-relaxed">
+                  Shop No. LGF-058, Building No.1, Nirman Khand-I,
+                  Gomti Nagar Scheme, Lucknow, Uttar Pradesh – 226010
+                </p>
+
+                <div className="space-y-1">
+                  <p className="text-xs font-bold text-[#B1924E] uppercase tracking-wider">
+                    Timings: 09:00 AM – 09:00 PM
+                  </p>
+                  <p className="text-sm font-medium text-[#08221B]">
+                    📞 +91-0000000000
+                  </p>
+                </div>
+
+                {/* Actions */}
+                <div className="pt-2 flex gap-3">
+                  <button className="flex-1 bg-[#1C4A3C] py-2.5 text-xs font-bold text-white uppercase transition hover:bg-[#08221B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#08221B]">
+                    See Designs
+                  </button>
+
+                  <button className="flex-1 border border-[#08221B] py-2.5 text-xs font-bold text-[#08221B] uppercase flex items-center justify-center gap-2 transition hover:bg-[#08221B] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#08221B]">
+                    <MapPin size={14} />
+                    Navigate
+                  </button>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
