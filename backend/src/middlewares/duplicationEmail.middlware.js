@@ -15,7 +15,7 @@ const duplicateEmail = async (req, res, next) => {
             return res.status(401).json(new ApiError(401, null, "Email Already Registrated"));
         }
 
-        next();
+        return next();
 
     }
     catch(err){
