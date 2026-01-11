@@ -53,6 +53,7 @@ const product_Schema = new Schema({
     },
     variants: [{
         purity: String,
+        quantity: Number,
         weight: Number,
         price: Number
     }],
