@@ -10,6 +10,9 @@ const auth_Schema = new Schema({
         type: String,
         required: true
     },
+    profileImage:{
+        type: String
+    },
     firstName: {
         type: String,
         required: true
