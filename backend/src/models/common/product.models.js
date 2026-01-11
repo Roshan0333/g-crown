@@ -34,6 +34,7 @@ const product_Schema = new Schema({
     attributes: {
         purity: [String],
         gemstone: String,
+        color: String,
         material: String,
         weight: Number,
         brand: String
