@@ -8,19 +8,20 @@ const Signup = async (req, res) => {
     try {
         const { firstName, lastName, email, password } = req.body;
 
-        const customerDetail = auth_Model({
+        const adminDetail = auth_Model({
             email: email,
             password: await encryptPasswordMethod(password),
             firstName: firstName,
             lastName: lastName
         });
 
-        await customerDetail.save();
+        await adminDetail.save();
 
-        customerDetail.password = undefined;
-        customerDetail.contact = undefined;
+        adminDetail.password = undefined;
+        adminDetail.contact = undefined;
+        adminDetail.profileImage = undefined
 
-        await cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, adminDetail)
 
         return res.status(200).json(new ApiResponse(200, null, "Registration Successful"));
     }
@@ -33,18 +34,19 @@ const Login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const customerDetail = await auth_Model.findOne({ email: email });
+        const adminDetail = await auth_Model.findOne({ email: email });
 
-        const decryptPassword = await decryptPasswordMethod(password, customerDetail.password);
+        const decryptPassword = await decryptPasswordMethod(password, adminDetail.password);
 
         if (!decryptPassword) {
             return res.status(401).json(new ApiError(401, "Incorrect Password"));
         }
 
-        customerDetail.password = undefined;
-        customerDetail.contact = undefined;
+        adminDetail.password = undefined;
+        adminDetail.contact = undefined;
+        adminDetail.profileImage = undefined
 
-        await cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, adminDetail)
         return res.status(200).json(new ApiResponse(200, null, "Access Granted"));
     }
     catch (err) {
@@ -56,17 +58,18 @@ const ForgotPassword = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        let customerDetail = await auth_Model.findOneAndUpdate(
+        let adminDetail = await auth_Model.findOneAndUpdate(
             { email: email },
             {
                 password: await encryptPasswordMethod(password)
             }
         );
 
-        customerDetail.password = undefined;
-        customerDetail.contact = undefined;
+        adminDetail.password = undefined;
+        adminDetail.contact = undefined;
+        adminDetail.profileImage = undefined
 
-        await cookiesForUser(res, customerDetail)
+        await cookiesForUser(res, adminDetail)
 
         return res.status(200).json(new ApiResponse(200, null, "Password Change Successfully."));
 
@@ -76,4 +79,49 @@ const ForgotPassword = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword };
+const UpdateProfile = async (req, res) => {
+    try {
+        const {contact, gender } = req.body;
+        const { _id } = req.user;
+
+        const updateData = {};
+
+        let image = req.file?req.file.buffer.toString("base64"):null
+
+        if (profileImage) updateData.profileImage = image;
+        if (contact) updateData.contact = contact;
+        if (gender) updateData.gender = gender;
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No data provided to update"
+            });
+        }
+
+        await auth_Model.findByIdAndUpdate(
+            _id,
+            { $set: updateData },
+            { new: true }
+        );
+
+        return res.status(200).json(new ApiResponse(200, null ,"Profile updated successfully"));
+
+    } catch (err) {
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.message}]));
+    }
+};
+
+const Signout = async (req, res) => {
+    try{
+        res.clearCookie("AccessToken");
+    res.clearCookie("RefreshToken");
+
+    return res.status(200).json(new ApiResponse(200, null, "Signout Successfully"))
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]))
+    }
+}
+
+export { Signup, Login, ForgotPassword, Signout, UpdateProfile};
