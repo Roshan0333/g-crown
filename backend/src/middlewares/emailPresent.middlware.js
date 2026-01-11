@@ -8,8 +8,6 @@ const customerEmail = async (req ,res, next) => {
         const {email} = req.body;
 
         const isEmail = await customerModel.findOne({email: email});
-
-        console.log(isEmail)
     
         if(isEmail !== null){
            return next()

@@ -1,10 +1,11 @@
 import productModel from "../../models/common/product.models.js";
+import authModel from "../../models/customer/user.model.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
 
 const addReview = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { productId } = req.query;
         const {_id} = req.user
 
         const {
@@ -16,6 +17,17 @@ const addReview = async (req, res) => {
         } = req.body;
 
         const product = await productModel.findById(productId);
+        const userDetail = await authModel.findById(_id)
+
+        let fullName = userDetail.firstName+" "+ userDetail.lastName;
+
+        if(fullName !== name){
+            return res.status(401).json(new ApiError(401, "User Name not Match."));
+        }
+
+        if(email !== userDetail.email){
+            return res.status(401).json(new ApiError(401, "Email not Match."));
+        }
 
         const mediaItem = req.file?req.file.buffer.toString("base64"):null;
 
@@ -41,7 +53,7 @@ const addReview = async (req, res) => {
 
         return res.status(200).json(new ApiResponse(
             200,
-            product,
+            null,
             "Review added successfully"
         ));
 

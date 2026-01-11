@@ -22,7 +22,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 app.use("/gcrown/api/v1/customer/auth", customerAuthRoutes);
-app.use("/gcrown/api/v1/custmer/product", customerProductRoutes);
+app.use("/gcrown/api/v1/customer/product", customerProductRoutes);
 app.use("/gcrown/api/v1/admin/auth", adminAuthRoutes);
 app.use("/gcrown/api/v1/admin/product", adminProductRoutes);
 
