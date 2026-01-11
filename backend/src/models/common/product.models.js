@@ -85,10 +85,13 @@ const product_Schema = new Schema({
             default: Date.now
         }
     }],
-
     description: String,
     additionalInfo: String,
-
+    deleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: Date,
     createdAt: {
         type: Date,
         default: Date.now
@@ -112,62 +115,62 @@ product_Schema.index({ "reviews.rating": 1 });
 product_Schema.index({ "reviews.createdAt": -1 });
 
 product_Schema.index({
-  category: 1,
-  "attributes.material": 1,
-  "attributes.gemstone": 1
+    category: 1,
+    "attributes.material": 1,
+    "attributes.gemstone": 1
 });
 
 product_Schema.index({
-  category: 1,
-  productCollection: 1,
-  "price.sale": 1
+    category: 1,
+    productCollection: 1,
+    "price.sale": 1
 });
 
 product_Schema.index({
-  tags: 1,
-  productCollection: 1
+    tags: 1,
+    productCollection: 1
 });
 
 product_Schema.index({
-  "attributes.material": 1,
-  "attributes.purity": 1
+    "attributes.material": 1,
+    "attributes.purity": 1
 });
 
 product_Schema.index({
-  "attributes.weight": 1,
-  "attributes.material": 1
+    "attributes.weight": 1,
+    "attributes.material": 1
 });
 
 product_Schema.index({
-  category: 1,
-  "rating.avg": -1
+    category: 1,
+    "rating.avg": -1
 });
 
 product_Schema.index({
-  category: 1,
-  tags: 1,
-  "rating.avg": -1
+    category: 1,
+    tags: 1,
+    "rating.avg": -1
 });
 
 product_Schema.index({
-  "attributes.brand": 1,
-  category: 1,
-  productCollection: 1
+    "attributes.brand": 1,
+    category: 1,
+    productCollection: 1
 });
 
 product_Schema.index({
-  "attributes.brand": 1,
-  "price.sale": 1
+    "attributes.brand": 1,
+    "price.sale": 1
 });
 
 product_Schema.index({
-  "attributes.brand": 1,
-  tags: 1
+    "attributes.brand": 1,
+    tags: 1
 });
 
 product_Schema.index({
-  "attributes.brand": 1,
-  "rating.avg": -1
+    "attributes.brand": 1,
+    "rating.avg": -1
 });
 
 product_Schema.index(

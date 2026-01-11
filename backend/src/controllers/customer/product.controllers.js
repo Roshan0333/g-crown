@@ -3,6 +3,23 @@ import authModel from "../../models/customer/user.model.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
 
+const getAllProducts = async (req, res) => {
+    try {
+        const products = await productModel.find({
+            deleted: { $ne: true }
+        });
+
+        return res.status(200).json(
+            new ApiResponse(200, products, "Products fetched successfully")
+        );
+
+    } catch (err) {
+        return res.status(500).json(
+            new ApiError(500, err.message, [{ message: err.message }])
+        );
+    }
+};
+
 const addReview = async (req, res) => {
     try {
         const { productId } = req.query;
@@ -29,8 +46,6 @@ const addReview = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Email not Match."));
         }
 
-        const mediaItem = req.file?req.file.buffer.toString("base64"):null;
-
         if (!product) {
             return res.status(404).json(new ApiError(404, "Product not found"));
         }
@@ -42,7 +57,7 @@ const addReview = async (req, res) => {
             title:title,
             comment:comment,
             rating:rating,
-            media:mediaItem,
+            media:userDetail.profileImage,
             createdAt: new Date()
         });
 
@@ -62,4 +77,5 @@ const addReview = async (req, res) => {
     }
 };
 
-export { addReview };
+
+export {getAllProducts, addReview };

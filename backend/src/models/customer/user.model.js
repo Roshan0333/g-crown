@@ -8,6 +8,9 @@ const auth_Schema = new Schema({
     password: {
         type: String
     },
+    profileImage:{
+        type: String
+    },
     firstName: {
         type: String
     },
