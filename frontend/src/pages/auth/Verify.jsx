@@ -4,12 +4,24 @@ import { useNavigate } from "react-router-dom";
 import { Loader2, ArrowLeft } from "lucide-react";
 import modelImage from "../../assets/authPages/verifyModel.png";
 import logo from "../../assets/authPages/logo.png";
+import { axiosPostService } from "../../services/axios";
+import { useLocation } from "react-router-dom";
+
 
 export default function Verify() {
+
+  let location = useLocation();
+
+  let { path, client, otp } = location.state || {};
+
   const navigate = useNavigate();
   const inputsRef = useRef([]);
   const [isLoading, setIsLoading] = useState(false);
   const [timer, setTimer] = useState(30);
+
+  const [emailOtp, setEmailOtp] = useState(otp);
+  const [enterOtp, setEnterOtp] = useState()
+
 
   useEffect(() => {
     let interval = null;
@@ -39,17 +51,46 @@ export default function Verify() {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API verification
-    setTimeout(() => {
-      setIsLoading(false);
-      // REDIRECT TO COMING SOON
-      navigate("/coming-soon");
-    }, 1500);
+    if (emailOtp !== enterOtp) {
+      return alert("Incorrect Otp");
+    }
+    else {
+      const apiResponse = await axiosPostService(path, client);
+
+      if (!apiResponse.ok) {
+        console.log(apiResponse)
+        alert(apiResponse.data.message || "Signup Failed");
+        return;
+      }
+      // Simulate API verification
+      setTimeout(() => {
+        setIsLoading(false);
+        // REDIRECT TO COMING SOON
+        navigate("/coming-soon");
+      }, 1500);
+    }
   };
+
+  const resendOtp = async (e) => {
+    e.preventDefault();
+
+    let email = client.email
+
+    const apiResponse = await axiosPostService(
+      "/customer/auth/signupOtp",
+      { email }
+    );
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message || "Failed to send OTP");
+      return;
+    }
+
+    setEmailOtp(apiResponse.OTP)
+  }
 
   return (
     <div className="flex h-screen w-full bg-[#fbf6ea] font-[Georgia] overflow-hidden flex-col md:flex-row">
-      
+
       {/* LEFT IMAGE SECTION */}
       <div className="relative hidden w-[45%] lg:block overflow-hidden">
         <motion.img
@@ -62,7 +103,7 @@ export default function Verify() {
         />
         <div className="absolute inset-9 border border-white/50 pointer-events-none z-10" />
         <div className="absolute inset-x-14 bottom-10 z-20">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
@@ -98,7 +139,7 @@ export default function Verify() {
             <p className="text-sm md:text-base text-[#b08a2e] font-normal leading-relaxed">
               Please enter the code we just sent to email <br />
               <span className="font-medium text-[#1f3d2b]">
-                example@gmail.com
+                {client.email}
               </span>
             </p>
           </div>
@@ -114,7 +155,11 @@ export default function Verify() {
                   key={i}
                   maxLength="1"
                   ref={(el) => (inputsRef.current[i] = el)}
-                  onChange={(e) => handleChange(e, i)}
+                  onChange={(e) => {
+                    handleChange(e, i)
+                    const digits = inputsRef.current.map((input) => input.value || "").join("");
+                    setEnterOtp(digits);
+                  }}
                   onKeyDown={(e) => handleKeyDown(e, i)}
                   className="h-10 w-10 md:h-13 md:w-13 text-xl text-center rounded border border-gray-300 focus:border-[#1f3d2b] outline-none bg-white transition-all shadow-sm"
                 />
@@ -122,7 +167,7 @@ export default function Verify() {
             </div>
 
             {/* BUTTON */}
-            <button 
+            <button
               type="submit"
               disabled={isLoading}
               className="w-full rounded bg-[#1f3d2b] py-3 text-white text-base font-semibold hover:bg-[#173022] transition-colors flex justify-center items-center"
@@ -134,10 +179,13 @@ export default function Verify() {
           {/* RESEND */}
           <p className="mt-6 text-center text-sm font-normal text-gray-600">
             Didn’t Receive code?{" "}
-            <button 
+            <button
               type="button"
               disabled={timer > 0}
-              onClick={() => setTimer(30)}
+              onClick={() => {
+                resendOtp(e);
+                setTimer(30);
+              }}
               className={`font-medium underline underline-offset-4 transition-colors ${timer > 0 ? "text-gray-400 cursor-not-allowed" : "text-[#1f3d2b] hover:text-[#b08a2e]"}`}
             >
               {timer > 0 ? `Resend in ${timer}s` : "Resend Code"}
@@ -147,5 +195,5 @@ export default function Verify() {
         </div>
       </div>
     </div>
-)
+  )
 }

@@ -6,13 +6,13 @@ const otp = async (req, res) => {
     try{
         const {email} = req.body;
 
-        let OTP = parseInt(Math.random()*10000).toString();
+        let OTP = parseInt(Math.random()*1000000).toString();
 
         const transport = nodemailer.createTransport({
             service: "gmail",
             auth:{
-                user: "",
-                pass:""
+                 user: "logine786@gmail.com",
+                pass: "zowb rits hjsn udyz"
             }
         });
 
