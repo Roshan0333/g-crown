@@ -9,7 +9,7 @@ const customerEmail = async (req ,res, next) => {
 
         const isEmail = await customerModel.findOne({email: email});
     
-        if(isEmail !== null){
+        if(isEmail){
            return next()
         }
 

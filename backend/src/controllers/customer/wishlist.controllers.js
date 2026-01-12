@@ -1,6 +1,7 @@
 import wishlistModel from "../../models/customer/wishList.model.js";
 import {ApiError} from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
+import mongoose from "mongoose";
 
 const addWishlist = async (req, res) => {
     try {
@@ -11,7 +12,7 @@ const addWishlist = async (req, res) => {
 
         if (!wishlist) {
             wishlist = wishlistModel({
-                customerId,
+                customerId:_id,
                 wishlist: [productId]
             });
 
@@ -55,18 +56,70 @@ const removeWishlist = async (req, res) => {
     }
 };
 
-const getWishlist = async (req, res) => {
+const removeAll = async (req, res) => {
   try {
-    const {_id} = req.user;
+    const { _id } = req.user; // logged-in user id
 
-    const wishlist = await wishlistModel.find({customerId:_id})
-      .populate("wishlist");
+    const wishlist = await wishlistModel.findOne({ customerId: _id });
 
-    return res.status(200).json(new ApiResponse(200, wishlist, "Your Wish List Items."));
+    if (!wishlist) {
+      return res.status(404).json(
+        new ApiError(404, "Wishlist not found")
+      );
+    }
+
+
+    wishlist.wishlist = [];
+
+    await wishlist.save();
+
+    return res.status(200).json(
+      new ApiResponse(200, null, "Wishlist cleared successfully")
+    );
 
   } catch (err) {
-    return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    return res.status(500).json(
+      new ApiError(
+        500,
+        err.message,
+        [{ message: err.message, name: err.name }]
+      )
+    );
   }
 };
 
-export {addWishlist, removeWishlist, getWishlist};
+
+const getWishlist = async (req, res) => {
+  try {
+    const { _id } = req.user;
+
+    const wishlist = await wishlistModel.aggregate([
+  {
+    $match: {
+      customerId: new mongoose.Types.ObjectId(_id)
+    }
+  },
+  {
+    $lookup: {
+      from: "products",
+      localField: "wishlist",
+      foreignField: "_id",
+      as: "products"
+    }
+  }
+]);
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, wishlist, "Your Wish List Items."));
+
+  } catch (err) {
+    return res
+      .status(500)
+      .json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
+  }
+};
+
+
+
+export {addWishlist, removeWishlist, removeAll,  getWishlist};

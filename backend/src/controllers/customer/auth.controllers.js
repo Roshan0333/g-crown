@@ -80,16 +80,18 @@ const ForgotPassword = async (req, res) => {
 
 const UpdateProfile = async (req, res) => {
     try {
-        const {contact, gender } = req.body;
+        const {firstName, lastName,contact, gender } = req.body;
         const { _id } = req.user;
 
         const updateData = {};
 
-        let image = req.file?req.file.buffer.toString("base64"):null
+        let image = req.file ? req.file.buffer.toString("base64"):null;
 
-        if (profileImage) updateData.profileImage = image;
-        if (contact) updateData.contact = contact;
+        if (req.file) updateData.profileImage = image;
+        if (contact) updateData.contact = parseInt(contact);
         if (gender) updateData.gender = gender;
+        if(firstName) updateData.firstName = firstName;
+        if(lastName) updateData.lastName = lastName;
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -112,6 +114,22 @@ const UpdateProfile = async (req, res) => {
 };
 
 
+const myProfile = async (req, res) => {
+    try{
+        const {_id} = req.user;
+
+        const userDetail = await auth_Model.findById(_id);
+
+        userDetail.password = undefined
+
+        return res.status(200).json(new ApiResponse(200, userDetail, "SuccessFully"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
+
 const Signout = async (req, res) => {
     try{
         res.clearCookie("AccessToken");
@@ -124,4 +142,4 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, Signout, UpdateProfile};
+export { Signup, Login, ForgotPassword, Signout, UpdateProfile, myProfile};
