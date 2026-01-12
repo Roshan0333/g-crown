@@ -1,5 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import axios from 'axios';
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Loader2, 
@@ -13,6 +15,7 @@ import {
 const OrderTracking = () => {
   const navigate = useNavigate();
   const [orderId, setOrderId] = useState("");
+    const [orderData, setOrderData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,18 +31,29 @@ const OrderTracking = () => {
 
     setIsLoading(true);
     setError("");
+    setOrderData(null);
 
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
 
-      navigate(`/track-id`);
-    } catch (err) {
+      const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/${cleanId}`);
+      setOrderData(res.data);
+
+      // await new Promise((resolve) => setTimeout(resolve, 800));
+
+      // navigate(`/track-id`);
+      
+      navigate("/track-id", { state: { orderId: cleanId, orderData: res.data } });
+
+    }
+     catch (err) {
+      console.error(err);
       setError("Unable to find this order. Please check the ID and try again.");
     } finally {
       setIsLoading(false);
     }
-  }, [orderId, navigate]);
+  }, [orderId]);
+
 
   return (
     <main className="bg-[#FFF9E9] min-h-screen antialiased selection:bg-[#1C3A2C] selection:text-white">
