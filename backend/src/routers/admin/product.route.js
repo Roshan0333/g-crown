@@ -9,8 +9,6 @@ let storage = multer.memoryStorage();
 
 let upload = multer({storage});
 
-console.log("Enter")
-
 router.route("/addProduct").post(isAuth, upload.array("productImage", 5) ,uploadNewProduct);
 router.route("/price").put(isAuth, updatePrice);
 router.route("/quantity").put(isAuth,updateQuantity);
