@@ -8,6 +8,8 @@ import customerStoreRoutes from "./routers/customer/store.route.js";
 import adminAuthRoutes from "./routers/admin/auth.route.js";
 import adminProductRoutes from "./routers/admin/product.route.js";
 import adminStoreRoutes from "./routers/admin/store.route.js";
+import userOrderRoutes from './routers/order/userOrder.route.js';
+
 
 const app = express();
 
@@ -31,5 +33,7 @@ app.use("/gcrown/api/v1/customer/store", customerStoreRoutes);
 app.use("/gcrown/api/v1/admin/auth", adminAuthRoutes);
 app.use("/gcrown/api/v1/admin/product", adminProductRoutes);
 app.use("/gcrown/api/v1/admin/store", adminStoreRoutes)
+
+app.use("/gcrown/api/v1/customer/order", userOrderRoutes)
 
 export default app;
