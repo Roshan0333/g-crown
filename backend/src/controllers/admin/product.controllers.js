@@ -17,6 +17,7 @@ const uploadNewProduct = async (req, res) => {
             variants,
             description,
             additionalInfo,
+            status
         } = req.body;
 
         const images = req.files ? req.files.map(file => file.buffer.toString("base64")) : null;
@@ -34,6 +35,7 @@ const uploadNewProduct = async (req, res) => {
             variants:variants,
             description:description,
             additionalInfo:additionalInfo,
+            status: status,
             productImage:images
         });
 
@@ -43,6 +45,16 @@ const uploadNewProduct = async (req, res) => {
     }
     catch (err) {
         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.message }]));
+    }
+}
+
+const getAllItem = async (req, res) => {
+    try{
+        const itemsList = await productModel.find({});
+        return res.status(200).json(new ApiResponse(200, itemsList, "Successfully"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
     }
 }
 
@@ -193,4 +205,4 @@ const restoreProduct = async (req, res) => {
 };
 
 
-export {uploadNewProduct, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct};
+export {uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct};

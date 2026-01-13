@@ -6,7 +6,8 @@ import { ApiResponse } from "../../utils/api-response.js";
 const getAllProducts = async (req, res) => {
     try {
         const products = await productModel.find({
-            deleted: { $ne: true }
+            deleted: { $ne: true },
+            status: true
         });
 
         return res.status(200).json(
