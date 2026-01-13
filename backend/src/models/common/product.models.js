@@ -89,6 +89,9 @@ const product_Schema = new Schema({
     }],
     description: String,
     additionalInfo: String,
+    status: {
+        type: Boolean,
+    },
     deleted: {
         type: Boolean,
         default: false
