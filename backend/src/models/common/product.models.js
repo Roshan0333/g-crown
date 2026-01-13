@@ -56,7 +56,8 @@ const product_Schema = new Schema({
         purity: String,
         quantity: Number,
         weight: Number,
-        price: Number
+        price: Number,
+        sale: Number,
     }],
     rating: {
         avg: {
