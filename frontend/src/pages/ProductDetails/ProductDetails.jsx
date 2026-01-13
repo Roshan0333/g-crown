@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Star, ChevronLeft, ChevronRight, Minus, Plus, Share2, ArrowLeft, Heart, User, ChevronDown, Upload, Check } from "lucide-react";
 import ProductCard from "../../components/products/ProductCard";
-import { allProducts } from "../../assets/MockData.jsx";
+// import { allProducts } from "../../assets/MockData.jsx";
 import FeatureCard from "../../components/common/FeatureCard";
 import { useCart } from "../../context/CartContext";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -13,21 +13,25 @@ import supportIcon from "../../assets/NewArrivalAssets/logos/streamline-plump_cu
 
 
 const ProductDetails = () => {
+
+  const [mainImage, setMainImage] = useState(0);
+  const [selectPurity, setSelectPurity] = useState(0)
   const location = useLocation();
   const navigate = useNavigate();
-  const { product } = location.state || {};
+  const { product, allproducts } = location.state || {};
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [product]);
+
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, [product]);
 
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("Description");
   const [selectedPurity, setSelectedPurity] = useState("18 KT");
   const [showAddedToCart, setShowAddedToCart] = useState(false);
-  const favorited = product ? isFavorite(product.id) : false;
+  const favorited = product ? isFavorite(product._id) : false;
 
   const handleAddToCart = () => {
     if (product) {
@@ -55,9 +59,12 @@ const ProductDetails = () => {
 
   const tabs = ["Description", "Additional Information", "Review"];
 
-  const relatedProducts = allProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 3); // sirf 3 product show karne ke liye
+  const relatedProducts = Array.isArray(allproducts)
+    ? allproducts.filter(
+      (p) => p.category === product.category && p._id !== product._id
+    )
+    : [];
+
 
 
   const handleProductClick = (item) => {
@@ -89,7 +96,7 @@ const ProductDetails = () => {
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-[40%] space-y-4">
             <div className="relative aspect-square bg-white rounded-lg overflow-hidden group">
-              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+              <img src={product.productImage[mainImage]} alt={product.name} className="w-full h-full object-cover" />
               <button
                 onClick={() => product && toggleFavorite(product)}
                 className="absolute top-4 right-4 z-10 bg-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all"
@@ -108,12 +115,21 @@ const ProductDetails = () => {
               </button>
             </div>
             <div className="grid grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#B39055]">
-                  <img src={product.image} alt="thumbnail" className="w-full h-full object-cover" />
+              {product.productImage.slice(0, 4).map((image, index) => (
+                <div
+                  key={index}
+                  className="aspect-square bg-white rounded-md overflow-hidden cursor-pointer border-2 border-transparent hover:border-[#B39055]"
+                >
+                  <img
+                    src={image}
+                    alt="thumbnail"
+                    className="w-full h-full object-cover"
+                    onClick={() => setMainImage(index)}
+                  />
                 </div>
               ))}
             </div>
+
           </div>
 
           <div className="lg:w-1/2 space-y-6 mt-15 ">
@@ -132,22 +148,25 @@ const ProductDetails = () => {
             </div>
 
             <div className="flex items-center gap-4">
-              <span className="text-[25px] font-bold text-[#1C3A2C]">₹{product.price.toLocaleString()}</span>
-              <span className=" line-through text-lg text-[#37654B]">₹{product.oldPrice.toLocaleString()}</span>
+              <span className="text-[25px] font-bold text-[#1C3A2C]">₹{product.variants[selectPurity].sale.toLocaleString()}</span>
+              <span className=" line-through text-lg text-[#37654B]">₹{product.variants[selectPurity].price.toLocaleString()}</span>
             </div>
 
             <p className="text-gray-600 leading-relaxed">
-              The {product.name} is a refined gold creation designed to add effortless luxury and timeless charm to every moment.
+              The {product.name} is a refined gold creation designed to add effortless luxury and timeless charm to every moment. {product.additionalInfo}
             </p>
 
             <div className="space-y-3">
               <p className="font-semibold text-sm uppercase tracking-wider">Purity</p>
               <div className="flex gap-3">
-                {["18 KT", "22 KT", "24 KT"].map((purity) => (
+                {product.attributes.purity.map((purity, index) => (
                   <button
                     key={purity}
-                    onClick={() => setSelectedPurity(purity)}
-                    className={`px-4 py-2 border text-sm transition-all ${selectedPurity === purity
+                    onClick={() => {
+                      setSelectedPurity(purity);
+                      setSelectPurity(index)
+                    }}
+                    className={`px-4 py-2 border text-sm transition-all ${index === selectPurity
                       ? "border-[#1C3A2C] bg-[#1C3A2C] text-white"
                       : "border-gray-300 hover:border-[#1C3A2C]"
                       }`}
@@ -185,8 +204,11 @@ const ProductDetails = () => {
             </div>
 
             <div className="pt-6 border-t-2 border-[#6E6E6E] text-sm space-y-2 text-gray-500 mt-10">
-              <p><span className="text-[#1C3A2C] font-semibold">SKU :</span> GLDJ8SADC23C</p>
-              <p><span className="text-[#1C3A2C] font-semibold">Tags :</span> Gold, {product.category}, Diamond</p>
+              <p><span className="text-[#1C3A2C] font-semibold">SKU :</span> {product.sku}</p>
+              <p><span className="text-[#1C3A2C] font-semibold">Category :</span>{product.category}</p>
+              <p><span className="text-[#1C3A2C] font-semibold">Tags :</span>{product.tags.map((tag, index) => {
+                return <span key={index}>{tag} </span>
+              })}</p>
               <div className="flex items-center gap-2">
                 <span className="text-[#1C3A2C] font-semibold">Share :</span>
                 <Share2
@@ -236,7 +258,7 @@ const ProductDetails = () => {
             {activeTab === "Description" && (
               <div className="text-gray-600 leading-loose text-lg font-serif text-center space-y-6">
                 <p>
-                  The Golden Elegance Bracelet is a timeless expression of refined luxury and graceful design. Crafted in radiant gold with a flawless finish, this bracelet reflects understated sophistication that complements both everyday wear and special occasions. Its sleek form and elegant detailing make it a versatile piece, designed to be worn effortlessly and admired endlessly.
+                  {product.description}
                 </p>
                 <p>
                   Created with precision and care, the Golden Elegance Bracelet embodies G-Crown's commitment to craftsmanship, quality, and lasting beauty—an heirloom-worthy piece meant to shine for generations.
@@ -257,23 +279,23 @@ const ProductDetails = () => {
                   <tbody className="text-sm">
                     <tr className="bg-white">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Material</td>
-                      <td className="py-4 px-6 text-gray-600">Gold</td>
+                      <td className="py-4 px-6 text-gray-600">{product.attributes.material}</td>
                     </tr>
                     <tr className="bg-[#F9F4E8]">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Gemstones</td>
-                      <td className="py-4 px-6 text-gray-600">Diamond</td>
+                      <td className="py-4 px-6 text-gray-600">{product.attributes.gemstone}</td>
                     </tr>
                     <tr className="bg-white">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Purity</td>
-                      <td className="p-4 px-6 text-gray-600">18 KT, 22 KT, 24 KT</td>
+                      <td className="p-4 px-6 text-gray-600">{product.attributes.purity.map((item) => { return <span>{item} </span> })}</td>
                     </tr>
                     <tr className="bg-[#F9F4E8]">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Weight</td>
-                      <td className="py-4 px-6 text-gray-600">30 grams</td>
+                      <td className="py-4 px-6 text-gray-600">{product.attributes.weight.map((item) => { return <span>{item} </span> })}</td>
                     </tr>
                     <tr className="bg-white">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Brand</td>
-                      <td className="py-4 px-6 text-gray-600">ABC</td>
+                      <td className="py-4 px-6 text-gray-600">{product.brand}</td>
                     </tr>
                   </tbody>
                 </table>

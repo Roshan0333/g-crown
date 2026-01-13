@@ -33,12 +33,12 @@ const CollectionPage = ({
   );
 
   const materialOptions = useMemo(
-    () => Array.from(new Set(products.map((p) => p.material))).filter(Boolean),
+    () => Array.from(new Set(products.map((p) => p.attributes?.material))).filter(Boolean),
     [products]
   );
 
   const colorOptions = useMemo(
-    () => Array.from(new Set(products.map((p) => p.color))).filter(Boolean),
+    () => Array.from(new Set(products.map((p) => p.attributes?.color))).filter(Boolean),
     [products]
   );
 
@@ -80,23 +80,30 @@ const CollectionPage = ({
 
   const filteredProducts = useMemo(() => {
     let result = products.filter((product) => {
+      const salePrice = product?.price?.sale ?? 0;
+      const material = product?.attributes?.material;
+      const color = product?.attributes?.color;
+
       const categoryMatch =
-        selectedCategories.length === 0 ||
-        selectedCategories.includes(product.category);
+        selectedCategories.length === 0 || selectedCategories.includes(product.category);
+
       const materialMatch =
-        selectedMaterials.length === 0 ||
-        selectedMaterials.includes(product.material);
+        selectedMaterials.length === 0 || selectedMaterials.includes(material);
+
       const colorMatch =
-        selectedColors.length === 0 ||
-        selectedColors.includes(product.color);
+        selectedColors.length === 0 || selectedColors.includes(color);
+
       const priceMatch =
-        product.price >= priceRange[0] && product.price <= priceRange[1];
+        salePrice >= priceRange[0] && salePrice <= priceRange[1];
 
       return categoryMatch && materialMatch && colorMatch && priceMatch;
     });
 
-    if (sortBy === "lowToHigh") result.sort((a, b) => a.price - b.price);
-    else if (sortBy === "highToLow") result.sort((a, b) => b.price - a.price);
+    if (sortBy === "lowToHigh") {
+      result = result.sort((a, b) => (a.price?.sale ?? 0) - (b.price?.sale ?? 0));
+    } else if (sortBy === "highToLow") {
+      result = result.sort((a, b) => (b.price?.sale ?? 0) - (a.price?.sale ?? 0));
+    }
 
     return result;
   }, [
@@ -107,6 +114,7 @@ const CollectionPage = ({
     priceRange,
     sortBy,
   ]);
+
 
   return (
     <div className="bg-[#FFF9E9] min-h-screen font-sans text-[#2D2D2D]">
@@ -189,13 +197,13 @@ const CollectionPage = ({
           {(selectedCategories.length > 0 ||
             selectedColors.length > 0 ||
             selectedMaterials.length > 0) && (
-            <button
-              onClick={clearAll}
-              className="text-xs underline text-gray-400 ml-2"
-            >
-              Clear ALL
-            </button>
-          )}
+              <button
+                onClick={clearAll}
+                className="text-xs underline text-gray-400 ml-2"
+              >
+                Clear ALL
+              </button>
+            )}
         </div>
 
         {/* Layout with Sidebar */}
@@ -227,7 +235,7 @@ const CollectionPage = ({
             {filteredProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-6 lg:gap-8">
                 {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
+                  <ProductCard key={product._id} product={product}  allproducts={products}/>
                 ))}
               </div>
             ) : (
