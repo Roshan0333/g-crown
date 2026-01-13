@@ -8,6 +8,7 @@ import Home from "../pages/homePage/Home";
 import SignIn from "../pages/auth/SignIn.jsx";
 import SignUp from "../pages/auth/SignUp.jsx";
 
+
 import Collections from "../pages/collections/Collections.jsx";
 import EngagementRings from "../pages/collections/EngagementRings.jsx";
 import WeddingBands from "../pages/collections/WeddingBands.jsx";
@@ -37,6 +38,8 @@ import Terms from "../pages/terms/Terms.jsx";
 import Faq from "../pages/faqs/Faqs.jsx";
 import Verify from "../pages/auth/Verify.jsx";
 import ComingSoon from "../pages/auth/ComingSoon.jsx";
+import AdminLogin from "../pages/auth/AdminLogin.jsx";
+import AdminSignUp from "../pages/auth/AdminSignup.jsx";
 
 
 
@@ -61,6 +64,10 @@ export default function AppRoutes() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin-signup" element={<AdminSignUp />} />
+
+        
         
 
         <Route path="/collections" element={<Collections />} />
