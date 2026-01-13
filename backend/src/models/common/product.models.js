@@ -56,7 +56,8 @@ const product_Schema = new Schema({
         purity: String,
         quantity: Number,
         weight: Number,
-        price: Number
+        price: Number,
+        sale: Number,
     }],
     rating: {
         avg: {
@@ -88,6 +89,9 @@ const product_Schema = new Schema({
     }],
     description: String,
     additionalInfo: String,
+    status: {
+        type: Boolean,
+    },
     deleted: {
         type: Boolean,
         default: false
@@ -178,6 +182,20 @@ product_Schema.index(
     { name: "text", description: "text", tags: "text" },
     { partialFilterExpression: { stockStatus: "In Stock" } }
 );
+
+product_Schema.index({
+    status: 1,
+    stockStatus: 1,
+    category: 1,
+    productCollection: 1,
+    "price.sale": 1,
+    "rating.avg": -1
+});
+
+product_Schema.index({
+    status: 1,
+    deleted: 1,
+});
 
 
 const product_Model = mongoose.model("product", product_Schema);

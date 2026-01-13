@@ -1,9 +1,19 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Plus,Loader2,X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 const Address = () => {
+  // --- States ---
+
+
+  // Modal & Loading States
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
   const [addresses, setAddresses] = useState([]);
 const [formData, setFormData] = useState({
   firstName: "", lastName: "", country: "", address: "",
@@ -47,6 +57,7 @@ const handleAddAddress = async () => {
       zip,
       phone,
       email
+      
     };
 
     if (editingId) {
@@ -64,7 +75,7 @@ const handleAddAddress = async () => {
     setIsUpdating(false);
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
-
+       setIsModalOpen(false); 
   } catch (err) {
     setIsUpdating(false);
     alert("Error saving address");
@@ -119,7 +130,8 @@ const handleDelete = async (id) => {
     setZip(item.zip);
     setPhone(item.phone);
     setEmail(item.email);
-        setShowEditPopup(true);   // 👈 popup open
+          setIsModalOpen(true);   // 👈 हाच missing होता
+   
 
   }}
   className="text-black hover:underline cursor-pointer"
@@ -138,16 +150,16 @@ const handleDelete = async (id) => {
   </div>
 ))}
 
+
       </div>
 
-      <h3 className="text-xl font-medium text-[#1B3022] mb-8">Add New Address</h3>
+      {/* --- ADD NEW ADDRESS FORM (Static Theme) --- */}
+      <h3 className="text-xl font-medium text-[#1B3022] mb-8 uppercase tracking-widest">Add New Address</h3>
       
-      {/* Form Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-        
-        {/* Row 1: First & Last Name */}
+<form onSubmit={(e) => { e.preventDefault(); handleAddAddress(); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-white/50 p-6 border border-gray-100 rounded-lg">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">First Name*</label>
+
 <input
   value={firstName}
   onChange={(e) => setFirstName(e.target.value)}
@@ -226,8 +238,9 @@ const handleDelete = async (id) => {
 </div>
 
 
-        {/* Row 3: Phone & Email */}
-        <div className="col-span-full flex flex-col gap-2">
+      
+
+        <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">Phone Number*</label>
 <input
   value={phone}
@@ -244,20 +257,88 @@ const handleDelete = async (id) => {
   placeholder="example@gmail.com"
   className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
 />
+
         </div>
 
-        {/* Action Button */}
         <div className="col-span-full mt-4 flex items-center gap-4">
           <button 
-            onClick={handleAddAddress}
+            type="submit"
             disabled={isUpdating}
-            className={`bg-[#1B3022] text-white rounded-md py-3.5 px-10 text-sm font-medium transition-all active:scale-95 shadow-lg ${isUpdating ? 'opacity-70' : 'hover:bg-[#253d2c]'}`}
+            className="bg-[#1B3022] text-white py-3.5 px-10 text-xs font-bold uppercase tracking-[0.2em] transition-all hover:bg-[#253d2c] flex items-center gap-2"
           >
-            {isUpdating ? "Saving..." : showSuccess ? "Address Saved! ✓" : "Add Address"}
+            {isUpdating ? <Loader2 className="animate-spin" size={16} /> : <Plus size={16} />}
+            {isUpdating ? "Saving..." : "Add Address"}
           </button>
-          {showSuccess && <span className="text-green-600 text-sm italic animate-pulse">New address added to your list.</span>}
+          {showSuccess && <span className="text-green-600 text-sm italic animate-pulse">✓ Address added successfully!</span>}
         </div>
-      </div>
+      </form>
+
+      {/* --- EDIT POPUP MODAL --- */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-[#1B3022]/40 backdrop-blur-sm" />
+
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-2xl bg-[#FDF9F0] p-8 shadow-2xl border border-white/20"
+            >
+              <button onClick={() => setIsModalOpen(false)} className="absolute right-6 top-6 text-gray-400 hover:text-black">
+                <X size={24} />
+              </button>
+
+              <div className="mb-8">
+                <h2 className="text-2xl font-normal text-[#1B3022]">Edit Address</h2>
+                <p className="text-[#CBA135] text-xs font-bold uppercase tracking-widest mt-1">Update your delivery preferences</p>
+              </div>
+
+              <form onSubmit={(e) => e.preventDefault()} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+               <div className="flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">First Name*</label>
+  <input
+    value={firstName}
+    onChange={(e) => setFirstName(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">Last Name*</label>
+  <input
+    value={lastName}
+    onChange={(e) => setLastName(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">Address*</label>
+  <input
+    value={address}
+    onChange={(e) => setAddress(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="col-span-full mt-4">
+  <button
+    type="submit"
+    onClick={handleAddAddress}
+    disabled={isUpdating}
+    className="w-full bg-[#1B3022] text-white py-4 uppercase text-xs font-bold tracking-[0.2em] flex items-center justify-center gap-2"
+  >
+    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : "Update Address"}
+  </button>
+</div>
+
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

@@ -4,9 +4,15 @@ import { ApiResponse } from "../../utils/api-response.js";
 import { encryptPasswordMethod, decryptPasswordMethod } from "../../utils/passwordEncrypt&passwordDecrypt.js";
 import cookiesForUser from "../../utils/cookiesForUser.js";
 
+let securitykey = process.env.securitykey || "welcome of admins"
+
 const Signup = async (req, res) => {
     try {
-        const { firstName, lastName, email, password } = req.body;
+        const { firstName, lastName, email, password, securityKey } = req.body;
+
+        if (securityKey !== securitykey) {
+            return res.status(401).json(new ApiError(401, "Incorrect Security Key."))
+        }
 
         const adminDetail = auth_Model({
             email: email,
@@ -21,7 +27,10 @@ const Signup = async (req, res) => {
         adminDetail.contact = undefined;
         adminDetail.profileImage = undefined
 
-        await cookiesForUser(res, adminDetail)
+        const adminResponse = adminDetail.toObject();
+        adminResponse.role = "admin";
+
+        await cookiesForUser(res, adminResponse)
 
         return res.status(200).json(new ApiResponse(200, null, "Registration Successful"));
     }
@@ -34,7 +43,7 @@ const Login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        const adminDetail = await auth_Model.findOne({ email: email });
+        let adminDetail = await auth_Model.findOne({ email: email });
 
         const decryptPassword = await decryptPasswordMethod(password, adminDetail.password);
 
@@ -44,9 +53,13 @@ const Login = async (req, res) => {
 
         adminDetail.password = undefined;
         adminDetail.contact = undefined;
-        adminDetail.profileImage = undefined
+        adminDetail.profileImage = undefined;
 
-        await cookiesForUser(res, adminDetail)
+        const adminResponse = adminDetail.toObject();
+        adminResponse.role = "admin";
+
+
+        await cookiesForUser(res, adminResponse)
         return res.status(200).json(new ApiResponse(200, null, "Access Granted"));
     }
     catch (err) {
@@ -56,7 +69,11 @@ const Login = async (req, res) => {
 
 const ForgotPassword = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, securityKey } = req.body;
+
+        if (securityKey !== securitykey) {
+            return res.status(401).json(new ApiError(401, "Incorrect Security Key."))
+        }
 
         let adminDetail = await auth_Model.findOneAndUpdate(
             { email: email },
@@ -69,7 +86,10 @@ const ForgotPassword = async (req, res) => {
         adminDetail.contact = undefined;
         adminDetail.profileImage = undefined
 
-        await cookiesForUser(res, adminDetail)
+        const adminResponse = adminDetail.toObject();
+        adminResponse.role = "admin";
+
+        await cookiesForUser(res, adminResponse)
 
         return res.status(200).json(new ApiResponse(200, null, "Password Change Successfully."));
 
@@ -79,14 +99,46 @@ const ForgotPassword = async (req, res) => {
     }
 }
 
+const changePassword = async (req, res) => {
+    try{
+
+        const {oldPassword, newPassword} = req.body;
+
+        const {_id, role} = req.user;
+
+        if(!role){
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
+        const adminDetail = await auth_Model.findById(_id);
+
+        const decryptPassword = await decryptPasswordMethod(oldPassword, adminDetail.password);
+
+        if(!decryptPassword){
+            return res.status(401).json(new ApiError(401, "Incorrect Old Password"));
+        }
+
+        await auth_Model.findByIdAndUpdate(
+            {_id},
+            {password: await encryptPasswordMethod(newPassword)}
+        );
+
+        return res.status(200).json(new ApiResponse(200, null, "Password Changes Successfully"));
+
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
 const UpdateProfile = async (req, res) => {
     try {
-        const {contact, gender } = req.body;
+        const { contact, gender } = req.body;
         const { _id } = req.user;
 
         const updateData = {};
 
-        let image = req.file?req.file.buffer.toString("base64"):null
+        let image = req.file ? req.file.buffer.toString("base64") : null
 
         if (profileImage) updateData.profileImage = image;
         if (contact) updateData.contact = contact;
@@ -105,23 +157,23 @@ const UpdateProfile = async (req, res) => {
             { new: true }
         );
 
-        return res.status(200).json(new ApiResponse(200, null ,"Profile updated successfully"));
+        return res.status(200).json(new ApiResponse(200, null, "Profile updated successfully"));
 
     } catch (err) {
-        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.message}]));
+        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.message }]));
     }
 };
 
 const Signout = async (req, res) => {
-    try{
+    try {
         res.clearCookie("AccessToken");
-    res.clearCookie("RefreshToken");
+        res.clearCookie("RefreshToken");
 
-    return res.status(200).json(new ApiResponse(200, null, "Signout Successfully"))
+        return res.status(200).json(new ApiResponse(200, null, "Signout Successfully"))
     }
-    catch(err){
-        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]))
+    catch (err) {
+        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]))
     }
 }
 
-export { Signup, Login, ForgotPassword, Signout, UpdateProfile};
+export { Signup, Login, ForgotPassword, changePassword,  Signout, UpdateProfile };
