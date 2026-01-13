@@ -33,26 +33,26 @@ const suggestions = async (req, res) => {
     }
 };
 
-const filteredSearch = async (req, res) => {
-    try {
-        const { city, state, keyword } = req.query;
+// const filteredSearch = async (req, res) => {
+//     try {
+//         const { city, state, keyword } = req.query;
 
-        const store = await Showroom.find({
-            city: { $regex: city, $options: "i" },
-            state: { $regex: state, $options: "i" },
-            isDeleted: false,
-            $or: [
-                { name: { $regex: keyword, $options: "i" } },
-                { address: { $regex: keyword, $options: "i" } }
-            ]
-        });
+//         const store = await Showroom.find({
+//             city: { $regex: city, $options: "i" },
+//             state: { $regex: state, $options: "i" },
+//             isDeleted: false,
+//             $or: [
+//                 { name: { $regex: keyword, $options: "i" } },
+//                 { address: { $regex: keyword, $options: "i" } }
+//             ]
+//         });
 
-        return res.status(200).json(new ApiResponse(200, store, "Successfull"));
+//         return res.status(200).json(new ApiResponse(200, store, "Successfull"));
 
-    } catch (err) {
-        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
-    }
-};
+//     } catch (err) {
+//         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
+//     }
+// };
 
 const searchByCityPincode = async (req, res) => {
     try {
@@ -87,21 +87,21 @@ const searchByPincode = async (req, res) => {
     }
 };
 
-const searchByState = async (req, res) => {
-    try {
-        const { state } = req.query;
+// const searchByState = async (req, res) => {
+//     try {
+//         const { state } = req.query;
 
-        const store = await Showroom.find({
-            state: { $regex: state, $options: "i" },
-            isDeleted: false
-        });
+//         const store = await Showroom.find({
+//             state: { $regex: state, $options: "i" },
+//             isDeleted: false
+//         });
 
-        return res.status(200).json(new ApiResponse(200, store, "Successfull"));
+//         return res.status(200).json(new ApiResponse(200, store, "Successfull"));
 
-    } catch (err) {
-        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
-    }
-};
+//     } catch (err) {
+//         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
+//     }
+// };
 
 const searchByCity = async (req, res) => {
     try {
@@ -119,30 +119,27 @@ const searchByCity = async (req, res) => {
     }
 };
 
-const searchKeyword = async (req, res) => {
-    try {
-        const { keyword } = req.query;
+// const searchKeyword = async (req, res) => {
+//     try {
+//         const { keyword } = req.query;
 
-        const store = await Showroom.find({
-            isDeleted: false,
-            $text: { $search: keyword }
-        });
+//         const store = await Showroom.find({
+//             isDeleted: false,
+//             $text: { $search: keyword }
+//         });
 
-        return res.status(200).json(new ApiResponse(200, store, "Successfull"));
+//         return res.status(200).json(new ApiResponse(200, store, "Successfull"));
 
-    } catch (err) {
-        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
-    }
-};
+//     } catch (err) {
+//         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
+//     }
+// };
 
 export {
     getShowrooms,
     suggestions,
-    filteredSearch,
     searchByCityPincode,
     searchByPincode,
-    searchByState,
     searchByCity,
-    searchKeyword
 };
 

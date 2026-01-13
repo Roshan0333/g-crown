@@ -78,6 +78,34 @@ const ForgotPassword = async (req, res) => {
     }
 }
 
+const changePassword = async (req, res) => {
+    try{
+
+        const {oldPassword, newPassword} = req.body;
+
+        const {_id} = req.user;
+
+        const userDetail = await auth_Model.findById(_id);
+
+        const decryptPassword = await decryptPasswordMethod(oldPassword, userDetail.password);
+
+        if(!decryptPassword){
+            return res.status(401).json(new ApiError(401, "Incorrect Old Password"));
+        }
+
+        await auth_Model.findByIdAndUpdate(
+            {_id},
+            {password: await encryptPasswordMethod(newPassword)}
+        );
+
+        return res.status(200).json(new ApiResponse(200, null, "Password Changes Successfully"));
+
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
 const UpdateProfile = async (req, res) => {
     try {
         const {firstName, lastName,contact, gender } = req.body;
@@ -113,7 +141,6 @@ const UpdateProfile = async (req, res) => {
     }
 };
 
-
 const myProfile = async (req, res) => {
     try{
         const {_id} = req.user;
@@ -129,7 +156,6 @@ const myProfile = async (req, res) => {
     }
 }
 
-
 const Signout = async (req, res) => {
     try{
         res.clearCookie("AccessToken");
@@ -142,4 +168,4 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, Signout, UpdateProfile, myProfile};
+export { Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile};

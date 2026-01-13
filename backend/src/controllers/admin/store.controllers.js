@@ -7,6 +7,10 @@ const addShowroom = async (req, res) => {
 
         const { name, address, city, state, pincode, country, timings, phone, navigateURL } = req.body;
 
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
         const image = req.files ? req.files.map(file => file.buffer.toString("base64")) : [];
 
         const showroom = Showroom(
@@ -34,6 +38,10 @@ const addShowroom = async (req, res) => {
 
 const getShowrooms = async (req, res) => {
     try {
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
         const store = await Showroom.find({});
         return res.status(200).json(new ApiResponse(200, store, "Successfull"));
     } catch (err) {
@@ -43,7 +51,11 @@ const getShowrooms = async (req, res) => {
 
 const softDeleteShowroom = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.query;
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         await Showroom.findByIdAndUpdate(id, {
             isDeleted: true,
@@ -58,7 +70,11 @@ const softDeleteShowroom = async (req, res) => {
 
 const hardDeleteShowroom = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.query;
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         await Showroom.findByIdAndDelete(id);
 
@@ -68,5 +84,5 @@ const hardDeleteShowroom = async (req, res) => {
     }
 }
 
-export {addShowroom, getShowrooms, softDeleteShowroom, hardDeleteShowroom};
+export { addShowroom, getShowrooms, softDeleteShowroom, hardDeleteShowroom };
 
