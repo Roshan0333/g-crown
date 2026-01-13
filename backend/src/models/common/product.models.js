@@ -183,6 +183,20 @@ product_Schema.index(
     { partialFilterExpression: { stockStatus: "In Stock" } }
 );
 
+product_Schema.index({
+    status: 1,
+    stockStatus: 1,
+    category: 1,
+    productCollection: 1,
+    "price.sale": 1,
+    "rating.avg": -1
+});
+
+product_Schema.index({
+    status: 1,
+    deleted: 1,
+});
+
 
 const product_Model = mongoose.model("product", product_Schema);
 
