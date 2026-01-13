@@ -25,9 +25,15 @@ const Profile = () => {
     // Add any cleanup logic here (clear localStorage, etc.)
     const apiResponse = await axiosPostService("/customer/auth/signout", {});
 
-    console.log(apiResponse.data.message)
-    navigate("/signin");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message || "Logout Failed");
+      return
+    }
+    else {
+      localStorage.clear();
+      navigate("/signin");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   // Senior Tip: Use a render map for better readability

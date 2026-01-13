@@ -57,7 +57,7 @@ const Login = async (req, res) => {
 
 const ForgotPassword = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const {email,password} = req.body;
 
         let customerDetail = await auth_Model.findOneAndUpdate(
             { email: email },
@@ -120,6 +120,7 @@ const UpdateProfile = async (req, res) => {
         if (gender) updateData.gender = gender;
         if(firstName) updateData.firstName = firstName;
         if(lastName) updateData.lastName = lastName;
+        if(!lastName) updateData.lastName = ""
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({

@@ -13,9 +13,11 @@ const PersonalInfo = () => {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [image, setImage] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState("Male");
   const [contact, setContact] = useState();
   const [selectedImageFile, setSelectedImageFile] = useState(null);
+
+  let role = localStorage.getItem("role");
 
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
@@ -41,27 +43,36 @@ const PersonalInfo = () => {
       formData.append("contact", contact);
       formData.append("gender", gender);
 
+      console.log(gender)
+
       if (selectedImageFile) {
         formData.append("profileImage", selectedImageFile);
       }
 
       const apiResponse = await axiosPutService(
-        "/customer/auth/profile",
+        (role) ? "/admin/auth/profile" : "/customer/auth/profile",
         formData
       );
 
-      alert(apiResponse.data.message);
-
-      // fake delay optional (for animation)
-      setTimeout(() => {
+      if (!apiResponse.ok) {
         setIsUpdating(false);
-        setShowSuccess(true);
+        alert(apiResponse.data.message || "Update Failed");
+        return
+      }
+      else {
+        alert(apiResponse.data.message);
 
+        // fake delay optional (for animation)
         setTimeout(() => {
-          setShowSuccess(false);
-        }, 3000);
-      }, 500); // small delay for smoother UI
+          setIsUpdating(false);
+          setShowSuccess(true);
 
+          setTimeout(() => {
+            setShowSuccess(false);
+          }, 3000);
+        }, 500); // small delay for smoother UI}
+
+      }
     } catch (err) {
       console.log(err);
       alert("Something went wrong!");
@@ -73,7 +84,7 @@ const PersonalInfo = () => {
   useEffect(() => {
     ; (
       async () => {
-        let apiResponse = await axiosGetService("/customer/auth/myProfile");
+        let apiResponse = await axiosGetService((role) ? "/admin/auth/myprofile" : "/customer/auth/myProfile");
 
         if (!apiResponse.ok) {
           alert(apiResponse.data.mesage || "No Personal Information Available");
@@ -109,7 +120,13 @@ const PersonalInfo = () => {
         className="relative w-28 h-28 mb-4"
         onClick={() => document.getElementById("profileFile").click()}>
         <img
-          src={(!image)?ProfilePic:`data:image/*;base64,${image}`}
+          src={
+            !image
+              ? ProfilePic
+              : image.startsWith("blob:")
+                ? image
+                : `data:image/*;base64,${image}`
+          }
           className="rounded-full w-full h-full object-cover border-2 border-white shadow-sm"
           alt="Profile"
         />
@@ -174,10 +191,11 @@ const PersonalInfo = () => {
 
         <div className="flex flex-col gap-2 col-span-full relative">
           <label className="text-sm font-medium text-gray-700">Gender*</label>
-          <select className="p-3 border rounded-sm border-gray-200 outline-none bg-white focus:border-[#1B3022] appearance-none cursor-pointer shadow-sm w-full" onChange={(e) => setGender(e.target.value)} value={(!gender) ? "Male" : gender}>
-            <option name={gender} value="Male">Male</option>
-            <option name={gender} value="Female">Female</option>
-            <option name={gender} value="Other">Other</option>
+          <select className="p-3 border rounded-sm border-gray-200 outline-none bg-white focus:border-[#1B3022] appearance-none cursor-pointer shadow-sm w-full" onChange={(e) => setGender(e.target.value)} value={gender}>
+            <option >Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
           </select>
           {/* Custom Dropdown Arrow */}
           <div className="absolute right-5 bottom-2 text-2xl  pointer-events-none text-gray-900">

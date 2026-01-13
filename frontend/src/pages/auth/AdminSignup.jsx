@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowLeft, Shield, User, Mail, Lock } from "lucide-react";
 import modelImage from "../../assets/authPages/signInModel.png";
 import logo from "../../assets/authPages/logo.png";
+import { axiosPostService } from "../../services/axios"
 
 // Animation variants for a polished entry
 const containerVariants = {
@@ -23,46 +24,81 @@ const AdminSignUp = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
-    fullName: "",
+    name: "",
     email: "",
     password: "",
-    adminSecretKey: ""
+    securityKey: ""
   });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleAdminSignUp = (e) => {
+  const validatePassword = () => {
+    let errors = [];
+
+    if (!formData.name.trim()) errors.push("Full Name is required");
+    if (!formData.email.trim()) errors.push("Email is required");
+    if (!formData.password.trim()) errors.push("Password is required");
+    if (!formData.securityKey.trim()) errors.push("Security Key is required");
+
+    if (formData.password < 8) {
+      errors.push("Password must be at least 8 characters long");
+    }
+
+    const specialRegex = /[^A-Za-z0-9]/;
+    if (formData.password && !specialRegex.test(formData.password)) {
+      errors.push("Password must contain at least one special symbol (!,@,#,$ etc.)");
+    }
+
+    if (errors.length > 0) {
+      alert(errors.join("\n"));
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleAdminSignUp = async (e) => {
     e.preventDefault();
+
+    if(!validatePassword()) return
+
     setIsLoading(true);
 
-    // SIMULATING API CALL (Since no backend exists yet)
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // We package the data exactly how Verify.jsx expects it
-      const stateToPass = {
-        path: "/admin/auth/signup", // The intended API path
-        client: formData,           // The user data
-        otp: "123456"               // The mock OTP for the next screen
-      };
+    const apiResponse = await axiosPostService("/admin/auth/signupOtp", formData);
 
-      // Optional: Save to localStorage for frontend persistence
-      localStorage.setItem("pendingAdmin", JSON.stringify(formData));
-      
-      // Redirect to Verify.jsx with state
-      navigate("/verify", { state: stateToPass });
-      
-      console.log("Mock OTP Process Started for:", formData.email);
-    }, 1500); 
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message || "Signup Failed");
+      setIsLoading(false)
+      return
+    }
+    else {
+      setTimeout(() => {
+        setIsLoading(false);
+
+        // Optional: Save to localStorage for frontend persistence
+        // localStorage.setItem("pendingAdmin", JSON.stringify(formData));
+
+        // Redirect to Verify.jsx with state
+        navigate("/verify", {
+          state: {
+            path: "/admin/auth/signup", 
+            client: formData,           
+            otp: apiResponse.data.data,
+            role: "admin"         
+          }
+        });
+
+      }, 1500);
+    }
   };
 
   return (
     <section className="flex h-svh w-full overflow-hidden bg-[#FBF6EA] font-serif selection:bg-[#1E3A2F]/20">
-      
+
       {/* LEFT IMAGE SECTION - Architectural Composition */}
       <div className="relative hidden w-[45%] lg:block overflow-hidden bg-[#1E3A2F]">
         <motion.img
@@ -74,7 +110,7 @@ const AdminSignUp = () => {
           className="h-full w-full object-cover object-center opacity-90 pointer-events-none"
         />
         <div className="absolute inset-10 border border-white/30 pointer-events-none z-10" />
-        
+
         <div className="absolute inset-x-16 bottom-12 z-20">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -92,18 +128,18 @@ const AdminSignUp = () => {
 
       {/* RIGHT FORM SECTION - Pixel Perfect Alignment */}
       <div className="relative flex w-full flex-col overflow-y-auto lg:w-[55%] bg-[#FDF9F0]">
-        
+
         <nav className="absolute left-8 top-10 lg:left-14">
-          <button 
+          <button
             onClick={() => navigate("/admin-login")}
             className="group flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-[#1E3A2F] transition-all hover:opacity-60"
           >
-            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> 
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             Admin Login
           </button>
         </nav>
 
-        <motion.main 
+        <motion.main
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -130,9 +166,9 @@ const AdminSignUp = () => {
                 <input
                   id="fullName"
                   required
-                  name="fullName"
+                  name="name"
                   type="text"
-                  value={formData.fullName}
+                  value={formData.name}
                   onChange={handleChange}
                   placeholder="e.g. Alexander Crown"
                   className="w-full bg-white border border-gray-100 pl-12 pr-4 py-4 text-[15px] text-[#1E3A2F] outline-none transition-all focus:border-[#CBA135] focus:ring-4 focus:ring-[#CBA135]/5 shadow-sm"
@@ -191,9 +227,9 @@ const AdminSignUp = () => {
                   <input
                     id="adminSecretKey"
                     required
-                    name="adminSecretKey"
+                    name="securityKey"
                     type="password"
-                    value={formData.adminSecretKey}
+                    value={formData.securityKey}
                     onChange={handleChange}
                     placeholder="Secret Key"
                     className="w-full bg-white border border-gray-100 pl-12 pr-4 py-4 text-[15px] text-[#1E3A2F] outline-none transition-all focus:border-[#CBA135] focus:ring-4 focus:ring-[#CBA135]/5 shadow-sm"

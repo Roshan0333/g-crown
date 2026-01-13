@@ -8,17 +8,19 @@ let securitykey = process.env.securitykey || "welcome of admins"
 
 const Signup = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, securityKey } = req.body;
+        const { name, email, password, securityKey } = req.body;
 
         if (securityKey !== securitykey) {
             return res.status(401).json(new ApiError(401, "Incorrect Security Key."))
         }
 
+        const splitName = name.split(" ");
+
         const adminDetail = auth_Model({
             email: email,
             password: await encryptPasswordMethod(password),
-            firstName: firstName,
-            lastName: lastName
+            firstName: splitName[0],
+            lastName: splitName[1] || ""
         });
 
         await adminDetail.save();
@@ -133,16 +135,24 @@ const changePassword = async (req, res) => {
 
 const UpdateProfile = async (req, res) => {
     try {
-        const { contact, gender } = req.body;
-        const { _id } = req.user;
+        let {firstName, lastName, contact, gender } = req.body;
+        const { _id, role } = req.user;
+
+        if(!role){
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         const updateData = {};
 
         let image = req.file ? req.file.buffer.toString("base64") : null
 
-        if (profileImage) updateData.profileImage = image;
+        if (req.file) updateData.profileImage = image;
         if (contact) updateData.contact = contact;
         if (gender) updateData.gender = gender;
+        if(firstName) updateData.firstName = firstName;
+        if(lastName) updateData.lastName = lastName;
+        if(!lastName) updateData.lastName = "";
+
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -164,6 +174,25 @@ const UpdateProfile = async (req, res) => {
     }
 };
 
+const myProfile = async (req, res) => {
+    try{
+        const {_id, role} = req.user;
+
+        if(!role){
+            return res.status(401).json(new ApiError("Not Auth"));
+        }
+
+        const adminDetail = await auth_Model.findById(_id);
+
+        adminDetail.password = undefined;
+
+        return res.status(200).json(new ApiResponse(200, adminDetail, "SuccessFul"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
 const Signout = async (req, res) => {
     try {
         res.clearCookie("AccessToken");
@@ -176,4 +205,4 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, changePassword,  Signout, UpdateProfile };
+export { Signup, Login, ForgotPassword, changePassword,  Signout, UpdateProfile, myProfile };

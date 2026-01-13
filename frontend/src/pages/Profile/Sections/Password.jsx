@@ -48,7 +48,9 @@ const Password = () => {
         confirmPassword: confirmPassword
       }
 
-      const response = await axiosPutService("/customer/auth/changePassword", formData)
+      let role = localStorage.getItem("role");
+
+      const response = await axiosPutService((role)?"/admin/auth/changePassword":"/customer/auth/changePassword", formData)
 
       if (!response.ok) {
         alert(response.data.message || "Password not Change");

@@ -24,7 +24,8 @@ const AdminSignIn = () => {
       if (!apiResponse.ok) {
         alert(apiResponse.data.message || "Admin Access Denied");
       } else {
-        navigate("/admin/dashboard");
+        localStorage.setItem("role", 'admin')
+        navigate("/admin/");
       }
     } catch (error) {
       console.error("Admin Auth failed", error);
