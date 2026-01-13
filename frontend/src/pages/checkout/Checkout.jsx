@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, CreditCard, Truck, ShieldCheck, Lock, Landmark } from "lucide-react";
 import { useCart } from "../../context/CartContext";
+import axios from "axios";
+import { useEffect} from "react";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -10,42 +12,111 @@ export default function Checkout() {
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  
+
   const [formData, setFormData] = useState({
     email: "", firstName: "", lastName: "", address: "",
     city: "", postalCode: "", phone: "", cardNum: "", expiry: "", cvc: ""
   });
 
-  const { subtotal, shipping, total } = useMemo(() => {
-    const sub = getCartTotal();
-    const ship = sub > 0 ? 12.00 : 0;
-    return { subtotal: sub, shipping: ship, total: sub + ship };
-  }, [getCartTotal]);
+  const GST_RATE = 0.18;
+
+const { subtotal, gst, shipping, total } = useMemo(() => {
+  const sub = getCartTotal();
+  const gstAmount = sub * GST_RATE;
+  const ship = sub > 0 ? 12.0 : 0;
+  const grandTotal = sub + gstAmount + ship;
+
+  return {
+    subtotal: sub,
+    gst: gstAmount,
+    shipping: ship,
+    total: grandTotal
+  };
+}, [getCartTotal]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+
+  if (!selectedAddress) {
+    alert("Please select delivery address first");
+    return;
+  }
+
+  try {
     setIsProcessing(true);
 
-    const finalOrderDetails = {
-    items: [...cartItems], // Spreading to create a snapshot
-    subtotal: getCartTotal(),
-    orderId: `#KAASHI-${Math.floor(Math.random() * 1000000)}`,
-    date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-    }
+    // Backend ला order create करायला call
+    const { data } = await axios.post("http://localhost:3000/api/payment/create-order", {
+      amount: total  // paise मध्ये
+    });
 
-    // Simulate luxury payment gateway processing
-    setTimeout(() => {
-      setIsProcessing(false);
-      clearCart(); // Clean up cart after successful "purchase"
-      navigate("/order-success", { state: { order: finalOrderDetails } });
-    }, 3000);
+    const options = {
+      key: "rzp_test_S2ZQ4KbV345VDy", // इथे तुझा Razorpay Key टाक
+      amount: data.amount,
+      currency: "INR",
+      name: "CROWN Jewellery",
+      description: "Order Payment",
+      order_id: data.id,
+      
+        handler: async function (response) {
 
-    clearCart();
-  };
+  // 🔴 NEW: verify API ला cartItems + total पाठव
+  await axios.post("http://localhost:3000/api/payment/verify", {
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+    cartItems: cartItems,   // 🔴 NEW
+    totalAmount: total,
+    address: selectedAddress,
+    subtotal: subtotal,
+    gst: gst,
+    shipping: shipping
+  });
+
+ 
+
+  clearCart();
+  navigate("/order-success");
+},
+
+      prefill: {
+        name: selectedAddress.firstName,
+        email: formData.email,
+        contact: selectedAddress.phone
+      },
+      theme: {
+        color: "#1C3A2C"
+      }
+    };
+
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+
+    setIsProcessing(false);
+  } catch (error) {
+    console.log(error);
+    alert("Payment Failed");
+    setIsProcessing(false);
+  }
+};
+
+  
+  useEffect(() => {
+  axios.get("http://localhost:3000/api/addresses")
+    .then(res => setAddresses(res.data))
+    .catch(err => console.log(err));
+}, []);
+
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#FAF7ED] min-h-screen font-serif relative">
@@ -81,67 +152,46 @@ export default function Checkout() {
             <form onSubmit={handleSubmit} className="space-y-12">
               
               {/* Step 1: Contact */}
-              <section>
-                <h2 className="text-xl text-[#1C3A2C] mb-6 flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-[#1C3A2C] text-white flex items-center justify-center text-xs font-sans">1</span>
-                  Contact Information
-                </h2>
-                <input required type="email" name="email" placeholder="Email for Order Confirmation" onChange={handleInputChange} className="w-full bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C] transition-colors" />
-              </section>
+              
 
               {/* Step 2: Shipping */}
-              <section>
-                <h2 className="text-xl text-[#1C3A2C] mb-6 flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-[#1C3A2C] text-white flex items-center justify-center text-xs font-sans">2</span>
-                  Shipping Destination
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input required name="firstName" placeholder="First Name" onChange={handleInputChange} className="bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C]" />
-                  <input required name="lastName" placeholder="Last Name" onChange={handleInputChange} className="bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C]" />
-                  <input required name="address" placeholder="Street Address" onChange={handleInputChange} className="md:col-span-2 bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C]" />
-                  <input required name="city" placeholder="City" onChange={handleInputChange} className="bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C]" />
-                  <input required name="postalCode" placeholder="Postal Code" onChange={handleInputChange} className="bg-white border border-[#E5DDCC] p-4 outline-none focus:border-[#1C3A2C]" />
-                </div>
-              </section>
+             <section>
+  <h2 className="text-xl text-[#1C3A2C] mb-6">Select Shipping Address</h2>
+
+  {addresses.map(addr => (
+    <div key={addr._id} className="border p-4 mb-3 bg-white flex justify-between">
+      <label className="flex gap-3 cursor-pointer">
+        <input
+          type="radio"
+          name="address"
+          checked={selectedAddress?._id === addr._id}
+          onChange={() => setSelectedAddress(addr)}
+        />
+        <div>
+          <p className="font-bold">{addr.firstName} {addr.lastName}</p>
+          <p>{addr.address}, {addr.city}, {addr.state} - {addr.zip}</p>
+          <p>{addr.phone}</p>
+        </div>
+      </label>
+      <button className="text-sm underline">Edit</button>
+    </div>
+  ))}
+</section>
+
 
               {/* Step 3: Payment */}
-              <section>
-                <h2 className="text-xl text-[#1C3A2C] mb-6 flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-[#1C3A2C] text-white flex items-center justify-center text-xs font-sans">3</span>
-                  Payment Method
-                </h2>
-                <div className="border border-[#E5DDCC] bg-white divide-y divide-[#E5DDCC]">
-                  {/* Card Option */}
-                  <div className={`p-4 transition-colors ${paymentMethod === 'card' ? 'bg-[#FAF7ED]' : ''}`}>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="radio" checked={paymentMethod === 'card'} onChange={() => setPaymentMethod('card')} className="accent-[#1C3A2C]" />
-                      <CreditCard size={18} />
-                      <span className="text-sm font-medium">Credit / Debit Card</span>
-                    </label>
-                    {paymentMethod === 'card' && (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="mt-4 space-y-4 overflow-hidden">
-                        <input required name="cardNum" placeholder="Card Number" className="w-full p-3 border border-[#E5DDCC] text-sm outline-none" />
-                        <div className="flex gap-4">
-                          <input required name="expiry" placeholder="MM/YY" className="w-1/2 p-3 border border-[#E5DDCC] text-sm outline-none" />
-                          <input required name="cvc" placeholder="CVC" className="w-1/2 p-3 border border-[#E5DDCC] text-sm outline-none" />
-                        </div>
-                      </motion.div>
-                    )}
-                  </div>
-                  {/* Bank Transfer Option */}
-                  <div className={`p-4 transition-colors ${paymentMethod === 'bank' ? 'bg-[#FAF7ED]' : ''}`}>
-                    <label className="flex items-center gap-3 cursor-pointer">
-                      <input type="radio" checked={paymentMethod === 'bank'} onChange={() => setPaymentMethod('bank')} className="accent-[#1C3A2C]" />
-                      <Landmark size={18} />
-                      <span className="text-sm font-medium">Direct Bank Transfer</span>
-                    </label>
-                  </div>
-                </div>
-              </section>
+              
 
-              <button type="submit" className="w-full bg-[#1C3A2C] text-white py-5 text-sm uppercase tracking-[0.3em] font-semibold hover:bg-[#152e23] transition-all flex items-center justify-center gap-3">
-                <Lock size={16} /> Pay ${total.toFixed(2)}
-              </button>
+              <button
+  type="submit"
+  disabled={!selectedAddress}
+  className={`w-full py-5 ${
+    !selectedAddress ? "bg-gray-400 cursor-not-allowed" : "bg-[#1C3A2C] text-white"
+  }`}
+>
+  Pay ₹{total.toFixed(2)}
+</button>
+
             </form>
           </div>
 
@@ -161,10 +211,28 @@ export default function Checkout() {
                 ))}
               </div>
               <div className="space-y-3 border-t border-[#E5DDCC] pt-6">
-                <div className="flex justify-between text-sm text-gray-500 italic"><span>Shipping</span><span>${shipping.toFixed(2)}</span></div>
-                <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
-                  <span>Grand Total</span><span>${total.toFixed(2)}</span>
-                </div>
+
+  <div className="flex justify-between text-sm text-gray-500">
+    <span>Subtotal</span>
+    <span>₹{subtotal.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-sm text-gray-500">
+    <span>GST (18%)</span>
+    <span>₹{gst.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-sm text-gray-500 italic">
+    <span>Shipping</span>
+    <span>₹{shipping.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
+    <span>Grand Total</span>
+    <span>₹{total.toFixed(2)}</span>
+  </div>
+
+
               </div>
             </div>
           </aside>

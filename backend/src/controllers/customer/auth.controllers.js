@@ -57,7 +57,7 @@ const Login = async (req, res) => {
 
 const ForgotPassword = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const {email,password} = req.body;
 
         let customerDetail = await auth_Model.findOneAndUpdate(
             { email: email },
@@ -78,18 +78,49 @@ const ForgotPassword = async (req, res) => {
     }
 }
 
+const changePassword = async (req, res) => {
+    try{
+
+        const {oldPassword, newPassword} = req.body;
+
+        const {_id} = req.user;
+
+        const userDetail = await auth_Model.findById(_id);
+
+        const decryptPassword = await decryptPasswordMethod(oldPassword, userDetail.password);
+
+        if(!decryptPassword){
+            return res.status(401).json(new ApiError(401, "Incorrect Old Password"));
+        }
+
+        await auth_Model.findByIdAndUpdate(
+            {_id},
+            {password: await encryptPasswordMethod(newPassword)}
+        );
+
+        return res.status(200).json(new ApiResponse(200, null, "Password Changes Successfully"));
+
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
 const UpdateProfile = async (req, res) => {
     try {
-        const {contact, gender } = req.body;
+        const {firstName, lastName,contact, gender } = req.body;
         const { _id } = req.user;
 
         const updateData = {};
 
-        let image = req.file?req.file.buffer.toString("base64"):null
+        let image = req.file ? req.file.buffer.toString("base64"):null;
 
-        if (profileImage) updateData.profileImage = image;
-        if (contact) updateData.contact = contact;
+        if (req.file) updateData.profileImage = image;
+        if (contact) updateData.contact = parseInt(contact);
         if (gender) updateData.gender = gender;
+        if(firstName) updateData.firstName = firstName;
+        if(lastName) updateData.lastName = lastName;
+        if(!lastName) updateData.lastName = ""
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -111,6 +142,20 @@ const UpdateProfile = async (req, res) => {
     }
 };
 
+const myProfile = async (req, res) => {
+    try{
+        const {_id} = req.user;
+
+        const userDetail = await auth_Model.findById(_id);
+
+        userDetail.password = undefined
+
+        return res.status(200).json(new ApiResponse(200, userDetail, "SuccessFully"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
 
 const Signout = async (req, res) => {
     try{
@@ -124,4 +169,4 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, Signout, UpdateProfile};
+export { Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile};

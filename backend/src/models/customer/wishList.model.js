@@ -13,7 +13,7 @@ const wishlistSchema = new Schema({
     }]
 }, { timestamps: true });
 
-wishlistSchema.index({ customerId: 1, wishlist: 1 }, { unique: true });
+wishlistSchema.index({ customerId: 1 });
 
 
 const wishlistModel = mongoose.model("wishlist", wishlistSchema);

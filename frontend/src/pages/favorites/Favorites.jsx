@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -11,7 +11,7 @@ import supportIcon from "../../assets/NewArrivalAssets/logos/streamline-plump_cu
 
 export default function Favorites() {
   const navigate = useNavigate();
-  const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
+  const { favorites, removeFromFavorites, clearFavorites, fetchWishlist  } = useFavorites();
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const itemRefs = useRef({});
@@ -44,6 +44,11 @@ export default function Favorites() {
     showToast("Wishlist cleared");
   };
 
+ useEffect(() => {
+  fetchWishlist();
+}, []);
+
+
   /* =======================
      EMPTY STATE (PROFESSIONAL VERSION)
   ======================= */
@@ -52,7 +57,7 @@ export default function Favorites() {
     return (
       <div className="bg-[#FFF9E9] min-h-[75vh] flex flex-col items-center justify-center px-4">
         <div className="max-w-md w-full text-center space-y-8">
-          
+
           {/* Minimal Icon Representation */}
           <div className="relative flex justify-center items-center">
             <div className="absolute w-20 h-20 border border-[#1C3A2C]/20 rounded-full animate-ping [animation-duration:3s]" />
@@ -135,35 +140,81 @@ export default function Favorites() {
         <div className="flex flex-col gap-1">
           {favorites.map((product) => (
             <div
-              key={product.id}
-              ref={(el) => (itemRefs.current[product.id] = el)}
+              key={product._id}
+              ref={(el) => (itemRefs.current[product._id] = el)}
               className="grid grid-cols-1 md:grid-cols-[40px_1fr_140px_140px_160px] items-center gap-4 p-4 bg-white/30 border border-transparent hover:border-[#1C3A2C]/10 hover:bg-white/60 transition-all duration-300 group"
             >
+              {/* remove item */}
               <button
-                onClick={() => removeFromFavorites(product.id)}
+                onClick={() => removeFromFavorites(product._id)}
                 className="hidden md:block text-gray-300 hover:text-red-500 transition-colors"
               >
                 <span className="text-xl leading-none">×</span>
               </button>
 
-              <div className="flex items-center gap-6">
+              {/* Image + Name */}
+              <div
+                className="flex items-center gap-6 cursor-pointer"
+                onClick={() => navigate(`/product/${product.slug}`)}
+              >
                 <div className="w-20 h-24 overflow-hidden bg-gray-100">
                   <img
-                    src={product.image}
+                    src={
+                      product.productImage?.length > 0
+                        ? `data:image/jpeg;base64,${product.productImage[0]}`
+                        : "/fallback.jpg" // or placeholder
+                    }
                     alt={product.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                   />
+
                 </div>
+
                 <div>
-                  <p className="font-cormorant text-xl text-[#1C3A2C] font-semibold uppercase tracking-tight">{product.name}</p>
-                  <p className="text-[10px] tracking-widest text-gray-400 uppercase">{product.category}</p>
+                  <p className="font-cormorant text-xl text-[#1C3A2C] font-semibold uppercase tracking-tight">
+                    {product.name}
+                  </p>
+
+                  <p className="text-[10px] tracking-widest text-gray-400 uppercase">
+                    {product.category}
+                  </p>
+
+                  {/* optional rating */}
+                  {product.rating?.avg && (
+                    <p className="text-[10px] text-yellow-600">
+                      ★ {product.rating.avg} ({product.rating.totalReviews})
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <span className="text-[#1C3A2C] font-medium tracking-tighter">₹{product.price.toLocaleString()}</span>
-              
-              <span className="text-[10px] uppercase tracking-widest text-green-700 font-semibold">Available</span>
+              {/* Price */}
+              <div className="text-[#1C3A2C] text-[12px] tracking-tighter">
+                {product.price?.sale ? (
+                  <>
+                    <span className="font-semibold">
+                      ₹{product.price.sale.toLocaleString()}
+                    </span>
+                    <span className="line-through text-gray-400 ml-2 text-[11px]">
+                      ₹{product.price.mrp.toLocaleString()}
+                    </span>
+                  </>
+                ) : (
+                  <span>₹{product.price?.mrp?.toLocaleString()}</span>
+                )}
+              </div>
 
+              {/* Stock */}
+              <span
+                className={`text-[10px] uppercase tracking-widest font-semibold ${product.stockStatus === "In Stock"
+                  ? "text-green-700"
+                  : "text-red-700"
+                  }`}
+              >
+                {product.stockStatus}
+              </span>
+
+              {/* Add to Cart */}
               <button
                 onClick={() => handleAddToCart(product)}
                 className="py-3 border border-[#08221B] text-[#08221B] text-[10px] tracking-[0.2em] uppercase hover:bg-[#08221B] hover:text-white transition-all duration-500"
@@ -172,6 +223,7 @@ export default function Favorites() {
               </button>
             </div>
           ))}
+
         </div>
 
         {/* FEATURES */}

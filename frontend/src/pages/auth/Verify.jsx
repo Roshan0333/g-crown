@@ -12,7 +12,7 @@ export default function Verify() {
 
   let location = useLocation();
 
-  let { path, client, otp } = location.state || {};
+  let { path, client, otp, role} = location.state || {};
 
   const navigate = useNavigate();
   const inputsRef = useRef([]);
@@ -58,7 +58,7 @@ export default function Verify() {
       const apiResponse = await axiosPostService(path, client);
 
       if (!apiResponse.ok) {
-        console.log(apiResponse)
+        setIsLoading(false);
         alert(apiResponse.data.message || "Signup Failed");
         return;
       }
@@ -66,7 +66,11 @@ export default function Verify() {
       setTimeout(() => {
         setIsLoading(false);
         // REDIRECT TO COMING SOON
-        navigate("/coming-soon");
+        if(role === "admin"){
+          localStorage.setItem("role", 'admin')
+          navigate("/admin");
+        }
+        else{navigate("/coming-soon");}
       }, 1500);
     }
   };

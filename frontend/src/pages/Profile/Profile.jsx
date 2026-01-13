@@ -14,16 +14,26 @@ import FeatureCard from "../../components/common/FeatureCard";
 import shippingIcon from "../../assets/NewArrivalAssets/logos/la_shipping-fast.png";
 import paymentIcon from "../../assets/NewArrivalAssets/logos/fluent_payment-32-regular.png";
 import supportIcon from "../../assets/NewArrivalAssets/logos/streamline-plump_customer-support-7.png";
+import { axiosPostService } from "../../services/axios.js";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("profile");
 
   // Navigation helper defined inside component
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Add any cleanup logic here (clear localStorage, etc.)
-    navigate("/signin");
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    const apiResponse = await axiosPostService("/customer/auth/signout", {});
+
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message || "Logout Failed");
+      return
+    }
+    else {
+      localStorage.clear();
+      navigate("/signin");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   // Senior Tip: Use a render map for better readability
@@ -35,9 +45,9 @@ const Profile = () => {
       case "payment": return <Payment />;
       case "password": return <Password />;
       case "logout": return (
-        <LogoutView 
-          onConfirm={handleLogout} 
-          onCancel={() => setActiveTab("profile")} 
+        <LogoutView
+          onConfirm={handleLogout}
+          onCancel={() => setActiveTab("profile")}
         />
       );
       default: return <PersonalInfo />;
@@ -47,7 +57,7 @@ const Profile = () => {
   return (
     <main className="min-h-screen bg-[#FFF9E9] selection:bg-[#1B3022] selection:text-white">
       <div className="max-w-[1440px] mx-auto flex flex-col lg:flex-row p-5 lg:p-10 gap-8 lg:gap-12">
-        
+
         {/* Sidebar: Sticky on desktop for better UX */}
         <aside className="w-full lg:w-[280px] shrink-0 lg:sticky lg:top-24 h-fit">
           <ProfileSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -82,7 +92,7 @@ const LogoutView = ({ onConfirm, onCancel }) => {
 
   const handleConfirm = () => {
     setIsLoggingOut(true);
-    
+
     // Senior Tip: A 1.2s delay provides visual confirmation that 
     // the session is being cleared securely before redirecting.
     setTimeout(() => {
@@ -122,14 +132,14 @@ const LogoutView = ({ onConfirm, onCancel }) => {
       </AnimatePresence>
 
       {/* 2. Simple Confirmation UI */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         className="font-serif max-w-md"
       >
         <h2 className="text-3xl font-medium text-[#1B3022] mb-2">Logout</h2>
         <p className="text-[#B38B59] mb-8 italic text-lg">Are you sure you want to logout?</p>
-        
+
         <div className="flex flex-wrap gap-4">
           <button
             onClick={handleConfirm}
@@ -138,7 +148,7 @@ const LogoutView = ({ onConfirm, onCancel }) => {
           >
             YES, LOGOUT
           </button>
-          
+
           <button
             onClick={onCancel}
             disabled={isLoggingOut}
