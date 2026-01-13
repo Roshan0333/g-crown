@@ -8,7 +8,8 @@ const getAllProducts = async (req, res) => {
         const products = await productModel.find({
             deleted: { $ne: true },
             status: true
-        });
+        }).sort({ createdAt: -1 })   // uses index tail part
+        .lean();  ;
 
         return res.status(200).json(
             new ApiResponse(200, products, "Products fetched successfully")
