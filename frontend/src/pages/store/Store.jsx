@@ -8,6 +8,8 @@ import { axiosGetService } from "../../services/axios";
 
 export default function FindStore() {
   const [stores, setStores] = useState([]);
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
 
   useEffect(() => {
     ; (
@@ -24,6 +26,41 @@ export default function FindStore() {
       }
     )()
   }, [])
+
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    if (!query.trim()) return;
+
+    const trimmed = query.trim();
+    const isPin = /^\d{6}$/.test(trimmed);
+    const parts = trimmed.split(" ");
+
+    let api = "";
+
+    if (parts.length === 2 && /^\d{6}$/.test(parts[1])) {
+      api = `/customer/store/city-pincode?city=${parts[0]}&pincode=${parts[1]}`;
+    } else if (isPin) {
+      api = `/customer/store/pincode?pincode=${trimmed}`;
+    } else {
+      api = `/customer/store/city?city=${trimmed}`;
+    }
+
+    const apiResponse = await axiosGetService(api);
+    setStores(apiResponse.ok ? apiResponse.data.data : []);
+  };
+
+  const fetchSuggestions = async () => {
+    if (query.length < 2) return setSuggestions([]);
+    const res = await axiosGetService(`/customer/store/suggest?keyword=${query}`);
+    if (res.ok) setSuggestions(res.data.data);
+  };
+
+  useEffect(() => {
+    const t = setTimeout(fetchSuggestions, 350);
+    return () => clearTimeout(t);
+  }, [query]);
 
 
   return (
@@ -59,17 +96,36 @@ export default function FindStore() {
             Find a <span className="italic">G-Crown</span> Store
           </h1>
 
-          <form className="space-y-4" role="search">
-            <input
-              type="text"
-              placeholder="Enter city / pincode / locality"
-              className="w-full bg-white px-6 py-4 text-center text-[17px] text-[#08221B] placeholder:text-gray-500 outline-none shadow-inner focus:ring-2 focus:ring-[#CBA135]"
-            />
+          <form className="space-y-4" role="search" onSubmit={handleSearch}>
+            <div className="relative">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Enter city / pincode / locality"
+                className="w-full bg-white px-6 py-4 text-center text-[17px] text-[#08221B]"
+              />
 
-            <button
-              type="submit"
-              className="bg-gradient-to-r from-[#B49148] via-[#FFE577] to-[#BB9344] px-14 py-2.5 text-lg font-semibold text-[#08221B] shadow-lg transition hover:brightness-110 active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#CBA135]"
-            >
+              {/* Suggestions */}
+              {suggestions.length > 0 && (
+                <ul className="absolute top-full left-0 w-full bg-white border shadow z-20 text-left">
+                  {suggestions.map((s, i) => (
+                    <li
+                      key={i}
+                      className="px-4 py-2 cursor-pointer hover:bg-gray-200"
+                      onClick={() => {
+                        setQuery(s.city);
+                        setSuggestions([]);
+                      }}
+                    >
+                      {s.name} — {s.city} ({s.pincode})
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            <button type="submit" className="bg-gradient-to-r from-[#B49148] via-[#FFE577] to-[#BB9344] px-14 py-2.5 text-lg font-semibold text-[#08221B]">
               Check
             </button>
           </form>

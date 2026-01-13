@@ -20,28 +20,32 @@ const uploadNewProduct = async (req, res) => {
             status
         } = req.body;
 
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
         const images = req.files ? req.files.map(file => file.buffer.toString("base64")) : null;
 
         const newProduct = productModel({
-            name:name,
-            slug:slug,
-            sku:sku,
-            category:category,
-            collection:collection,
-            tags:tags,
-            attributes:attributes,
-            price:price,
-            stockStatus:stockStatus,
-            variants:variants,
-            description:description,
-            additionalInfo:additionalInfo,
+            name: name,
+            slug: slug,
+            sku: sku,
+            category: category,
+            collection: collection,
+            tags: tags,
+            attributes: attributes,
+            price: price,
+            stockStatus: stockStatus,
+            variants: variants,
+            description: description,
+            additionalInfo: additionalInfo,
             status: status,
-            productImage:images
+            productImage: images
         });
 
         await newProduct.save();
 
-        return res.status(200).json(new ApiResponse(200, null, "Product Upload Successfully."));  
+        return res.status(200).json(new ApiResponse(200, null, "Product Upload Successfully."));
     }
     catch (err) {
         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.message }]));
@@ -49,18 +53,27 @@ const uploadNewProduct = async (req, res) => {
 }
 
 const getAllItem = async (req, res) => {
-    try{
+    try {
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
         const itemsList = await productModel.find({});
         return res.status(200).json(new ApiResponse(200, itemsList, "Successfully"));
     }
-    catch(err){
-        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    catch (err) {
+        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
     }
 }
 
 const updateQuantity = async (req, res) => {
     try {
         const { productId, variants } = req.body;
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         if (!Array.isArray(variants)) {
             return res.status(400).json(new ApiError(400, "variants must be an array"));
@@ -94,6 +107,10 @@ const updateQuantity = async (req, res) => {
 const updatePrice = async (req, res) => {
     try {
         const { productId, mrp, sale, currency } = req.body;
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         const priceUpdate = {};
 
@@ -152,6 +169,10 @@ const hardDeleteProduct = async (req, res) => {
     try {
         const { productId } = req.query;
 
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
         const product = await productModel.findByIdAndDelete(productId);
 
         if (!product) {
@@ -167,6 +188,11 @@ const hardDeleteProduct = async (req, res) => {
 const softDeleteProduct = async (req, res) => {
     try {
         const { productId } = req.query;
+
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         const updated = await productModel.findByIdAndUpdate(
             productId,
@@ -188,7 +214,11 @@ const softDeleteProduct = async (req, res) => {
 
 const restoreProduct = async (req, res) => {
     try {
-        const { productId } = req.params;
+        const { productId } = req.query;
+
+        if (!req.user.role) {
+            return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
 
         const product = await productModel.findByIdAndUpdate(
             productId,
@@ -205,4 +235,4 @@ const restoreProduct = async (req, res) => {
 };
 
 
-export {uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct};
+export { uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct };
