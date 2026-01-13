@@ -1,140 +1,268 @@
-import React, { useState } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Edit3, Trash2, MapPin, Loader2, Plus } from "lucide-react";
 
+
 const Address = () => {
-  // --- States ---
-  const [addresses, setAddresses] = useState([
-    { id: 1, firstName: "Bessie", lastName: "Cooper", addr: "2456 Royal Ln. Mesa, New Mexico 234552", email: "bessie@example.com", phone: "02-33224455" },
-    { id: 2, firstName: "Bessie", lastName: "Cooper", addr: "6446 Elgin St. Celina, New York 102532", email: "bessie@example.com", phone: "02-33224455" }
-  ]);
+ 
+
+
+
 
   // Modal & Loading States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Form States
-  const initialFormState = { firstName: "", lastName: "", addr: "", email: "", phone: "" };
-  const [newAddress, setNewAddress] = useState(initialFormState); // For the "Add" form
-  const [editingAddress, setEditingAddress] = useState(null);    // For the "Edit" modal
 
-  // --- Handlers ---
-
-  // Handle Input Changes for Add Form
-  const handleAddChange = (e) => {
-    const { name, value } = e.target;
-    setNewAddress(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Handle Input Changes for Edit Modal
-  const handleEditChange = (e) => {
-    const { name, value } = e.target;
-    setEditingAddress(prev => ({ ...prev, [name]: value }));
-  };
-
-  // 1. ADD Logic
-  const handleAddNewAddress = (e) => {
-    e.preventDefault();
-    setIsUpdating(true);
-    
-    // Simulate API delay
-    setTimeout(() => {
-      const id = Date.now(); // Generate unique ID
-      setAddresses(prev => [...prev, { ...newAddress, id }]);
-      setNewAddress(initialFormState); // Clear form
-      setIsUpdating(false);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 3000);
-    }, 1000);
-  };
-
-  // 2. EDIT Logic (Open Modal)
-  const openEditModal = (address) => {
-    setEditingAddress({ ...address });
-    setIsModalOpen(true);
-  };
-
-  // 3. UPDATE Logic (Inside Modal)
-  const handleUpdateAddress = (e) => {
-    e.preventDefault();
-    setIsUpdating(true);
-    
-    setTimeout(() => {
-      setAddresses(prev => prev.map(addr => 
-        addr.id === editingAddress.id ? editingAddress : addr
-      ));
-      setIsUpdating(false);
-      setIsModalOpen(false);
-      setEditingAddress(null);
-    }, 800);
-  };
-
-  // 4. DELETE Logic
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to remove this address?")) {
-      setAddresses(prev => prev.filter(addr => addr.id !== id));
+  const [addresses, setAddresses] = useState([]);
+const [formData, setFormData] = useState({
+  firstName: "", lastName: "", country: "", address: "",
+  city: "", state: "", zip: "", phone: "", email: ""
+});
+useEffect(() => {
+  const fetchAddresses = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/addresses");
+      setAddresses(res.data);
+    } catch (err) {
+      console.log("Error fetching addresses", err);
     }
   };
 
-  return (
-    <div className="font-serif max-w-4xl animate-fadeIn relative pb-20">
+  fetchAddresses();
+}, []);
+
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [country, setCountry] = useState("");
+const [address, setAddress] = useState("");
+const [city, setCity] = useState("");
+const [state, setState] = useState("");
+const [zip, setZip] = useState("");
+const [phone, setPhone] = useState("");
+const [email, setEmail] = useState("");
+const [editingId, setEditingId] = useState(null);
+
+const handleAddAddress = async () => {
+  try {
+    setIsUpdating(true);
+
+    const payload = {
+      firstName,
+      lastName,
+      country,
+      address,
+      city,
+      state,
+      zip,
+      phone,
+      email
       
-      {/* --- SAVED ADDRESSES SECTION --- */}
-      <h3 className="text-xl font-medium text-[#1B3022] mb-6 uppercase tracking-widest">Saved Addresses</h3>
-      <div className="bg-white border border-gray-100 p-6 space-y-0 mb-10 shadow-sm rounded-lg">
-        <AnimatePresence mode="popLayout">
-          {addresses.map((item, i) => (
-            <motion.div 
-              layout
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, x: -20 }}
-              key={item.id} 
-              className={`flex justify-between items-start py-5 ${i === 0 ? "pt-0" : "border-t border-gray-50 pt-5"}`}
-            >
-              <div className="space-y-1">
-                <p className="font-bold text-[#1B3022] text-lg">{item.firstName} {item.lastName}</p>
-                <p className="text-sm text-gray-500 tracking-tight">{item.addr}</p>
-              </div>
-              <div className="flex gap-6 text-[13px] font-medium mt-1 uppercase tracking-widest">
-                <button onClick={() => openEditModal(item)} className="text-black hover:text-[#CBA135] transition-colors flex items-center gap-1">
-                  <Edit3 size={14} /> Edit
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="text-[#FF5C5C] hover:opacity-70 transition-colors flex items-center gap-1">
-                  <Trash2 size={14} /> Delete
-                </button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+    };
+
+    if (editingId) {
+      // UPDATE
+      await axios.put(`http://localhost:3000/api/addresses/${editingId}`, payload);
+    } else {
+      // ADD
+      await axios.post("http://localhost:3000/api/addresses", payload);
+    }
+
+    const res = await axios.get("http://localhost:3000/api/addresses");
+    setAddresses(res.data);
+
+    setEditingId(null);
+    setIsUpdating(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 3000);
+       setIsModalOpen(false); 
+  } catch (err) {
+    setIsUpdating(false);
+    alert("Error saving address");
+  }
+};
+
+
+const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this address?")) return;
+
+  try {
+    await axios.delete(`http://localhost:3000/api/addresses/${id}`);
+    const res = await axios.get("http://localhost:3000/api/addresses");
+    setAddresses(res.data); // refresh list
+  } catch (err) {
+    alert("Error deleting address");
+  }
+};
+
+
+  return (
+    <div className="font-serif max-w-4xl animate-fadeIn">
+      {/* Saved Addresses Section */}
+      <div className="bg-white border border-gray-100 p-6 space-y-0 mb-10 shadow-sm">
+        {addresses.map((item) => (
+  <div
+    key={item._id}
+    className="flex justify-between items-start py-5 border-b border-gray-100"
+  >
+    <div className="space-y-1">
+      <p className="font-bold text-[#1B3022] text-lg">
+        {item.firstName} {item.lastName}
+      </p>
+      <p className="text-sm text-gray-500 tracking-tight">
+        {item.address}, {item.city}, {item.state}, {item.zip}
+      </p>
+      <p className="text-sm text-gray-500">{item.phone}</p>
+      <p className="text-sm text-gray-500">{item.email}</p>
+    </div>
+
+    <div className="flex gap-6 text-[13px] font-medium mt-1">
+   <button
+  onClick={() => {
+    console.log("Edit clicked", item._id);   // test
+    setEditingId(item._id);
+    setFirstName(item.firstName);
+    setLastName(item.lastName);
+    setCountry(item.country);
+    setAddress(item.address);
+    setCity(item.city);
+    setState(item.state);
+    setZip(item.zip);
+    setPhone(item.phone);
+    setEmail(item.email);
+          setIsModalOpen(true);   // 👈 हाच missing होता
+   
+
+  }}
+  className="text-black hover:underline cursor-pointer"
+>
+  Edit
+</button>
+
+      <button
+  onClick={() => handleDelete(item._id)}
+  className="text-[#FF5C5C] hover:underline"
+>
+  Delete
+</button>
+
+    </div>
+  </div>
+))}
+
+
+
       </div>
 
       {/* --- ADD NEW ADDRESS FORM (Static Theme) --- */}
       <h3 className="text-xl font-medium text-[#1B3022] mb-8 uppercase tracking-widest">Add New Address</h3>
       
-      <form onSubmit={handleAddNewAddress} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-white/50 p-6 border border-gray-100 rounded-lg">
+
+<form onSubmit={(e) => { e.preventDefault(); handleAddAddress(); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-white/50 p-6 border border-gray-100 rounded-lg">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">First Name*</label>
-          <input required name="firstName" value={newAddress.firstName} onChange={handleAddChange} placeholder="Bessie" className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm" />
+
+<input
+  value={firstName}
+  onChange={(e) => setFirstName(e.target.value)}
+  placeholder="Bessie"
+  className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">Last Name*</label>
-          <input required name="lastName" value={newAddress.lastName} onChange={handleAddChange} placeholder="Cooper" className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm" />
+<input
+  value={lastName}
+  onChange={(e) => setLastName(e.target.value)}
+  placeholder="Cooper"
+  className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
         </div>
 
+        {/* Dropdowns Section */}
         <div className="col-span-full flex flex-col gap-2">
-          <label className="text-xs font-semibold text-gray-700">Full Address*</label>
-          <input required name="addr" value={newAddress.addr} onChange={handleAddChange} placeholder="Enter your full street address" className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm" />
-        </div>
+  <label className="text-xs font-semibold text-gray-700">Country*</label>
+  <input
+  type="text"
+  value={country}
+  onChange={(e) => setCountry(e.target.value)}
+  placeholder="Enter Country"
+  className="w-full p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-semibold text-gray-700">Address*</label>
+ <textarea
+  value={address}
+  onChange={(e) => setAddress(e.target.value)}
+  placeholder="Enter Full Address"
+  className="w-full p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-semibold text-gray-700">City*</label>
+  <input
+  type="text"
+  value={city}
+  onChange={(e) => setCity(e.target.value)}
+  placeholder="Enter City"
+  className="w-full p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-semibold text-gray-700">State*</label>
+ <input
+  type="text"
+  value={state}
+  onChange={(e) => setState(e.target.value)}
+  placeholder="Enter State"
+  className="w-full p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-semibold text-gray-700">Zip Code*</label>
+  <input
+  type="text"
+  value={zip}
+  onChange={(e) => setZip(e.target.value)}
+  placeholder="Enter Zip Code"
+  className="w-full p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+</div>
+
+
+      
 
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">Phone Number*</label>
-          <input required name="phone" value={newAddress.phone} onChange={handleAddChange} placeholder="02-33224455" className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm" />
+<input
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+  placeholder="02-33224455"
+  className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
         </div>
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-semibold text-gray-700">Email Address*</label>
-          <input required type="email" name="email" value={newAddress.email} onChange={handleAddChange} placeholder="example@gmail.com" className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm" />
+        <div className="col-span-full flex flex-col gap-2">
+          <label className="text-xs font-semibold text-gray-700">Email*</label>
+<input
+  value={email}
+  onChange={(e) => setEmail(e.target.value)}
+  placeholder="example@gmail.com"
+  className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
+/>
+
+
         </div>
 
         <div className="col-span-full mt-4 flex items-center gap-4">
@@ -171,24 +299,48 @@ const Address = () => {
                 <p className="text-[#CBA135] text-xs font-bold uppercase tracking-widest mt-1">Update your delivery preferences</p>
               </div>
 
-              <form onSubmit={handleUpdateAddress} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-700">First Name*</label>
-                  <input required name="firstName" value={editingAddress?.firstName} onChange={handleEditChange} className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]" />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-700">Last Name*</label>
-                  <input required name="lastName" value={editingAddress?.lastName} onChange={handleEditChange} className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]" />
-                </div>
-                <div className="col-span-full flex flex-col gap-2">
-                  <label className="text-xs font-bold text-gray-700">Address*</label>
-                  <input required name="addr" value={editingAddress?.addr} onChange={handleEditChange} className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]" />
-                </div>
-                <div className="col-span-full mt-4">
-                  <button type="submit" disabled={isUpdating} className="w-full bg-[#1B3022] text-white py-4 uppercase text-xs font-bold tracking-[0.2em] flex items-center justify-center gap-2">
-                    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : "Update Address"}
-                  </button>
-                </div>
+
+              <form onSubmit={(e) => e.preventDefault()} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+               <div className="flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">First Name*</label>
+  <input
+    value={firstName}
+    onChange={(e) => setFirstName(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">Last Name*</label>
+  <input
+    value={lastName}
+    onChange={(e) => setLastName(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="col-span-full flex flex-col gap-2">
+  <label className="text-xs font-bold text-gray-700">Address*</label>
+  <input
+    value={address}
+    onChange={(e) => setAddress(e.target.value)}
+    className="p-3 border border-gray-200 outline-none focus:border-[#CBA135]"
+  />
+</div>
+
+<div className="col-span-full mt-4">
+  <button
+    type="submit"
+    onClick={handleAddAddress}
+    disabled={isUpdating}
+    className="w-full bg-[#1B3022] text-white py-4 uppercase text-xs font-bold tracking-[0.2em] flex items-center justify-center gap-2"
+  >
+    {isUpdating ? <Loader2 className="animate-spin" size={16} /> : "Update Address"}
+  </button>
+</div>
+
+
               </form>
             </motion.div>
           </div>
