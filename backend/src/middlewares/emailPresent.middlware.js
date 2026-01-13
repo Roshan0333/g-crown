@@ -9,11 +9,11 @@ const customerEmail = async (req ,res, next) => {
 
         const isEmail = await customerModel.findOne({email: email});
     
-        if(isEmail){
-            next()
+        if(isEmail !== null){
+           return next()
         }
 
-        return res.status(401).json(new ApiError(401, null, "Email not Found."));
+        return res.status(401).json(new ApiError(401, "Email not Found."));
     }
     catch(err){
         return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
@@ -28,7 +28,7 @@ const adminEmail = async (req, res, next) => {
         const isEmail = await adminModel.findOne({email: email});
 
         if(isEmail){
-            next()
+           return next()
         }
 
         return res.status(401).json(new ApiError(401, null, "Email not found"));

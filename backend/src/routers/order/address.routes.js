@@ -4,7 +4,7 @@ import {
   getAddresses,
   updateAddress,
   deleteAddress
-} from "../controllers/address.controller.js";
+} from "../../controllers/order/address.controller.js";
 
 const router = express.Router();
 

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Download, Check, Package, ShoppingBag, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import FeatureCard from "../../components/common/FeatureCard";
+import axios from "axios";
 
 // Asset Imports
 import shippingIcon from "../../assets/NewArrivalAssets/logos/la_shipping-fast.png";
@@ -13,8 +14,22 @@ export default function OrderSuccess() {
   const navigate = useNavigate();
   const location = useLocation();
   const [showCelebration, setShowCelebration] = useState(true);
-  
-  const order = location.state?.order;
+  const openInvoice = () => {
+  window.open(`http://localhost:3000/api/orders/${order._id}/invoice`, "_blank");
+};
+
+const [order, setOrder] = useState(null);
+
+useEffect(() => {
+  axios.get("http://localhost:3000/api/orders")
+    .then(res => {
+      if (res.data.length > 0) {
+        setOrder(res.data[res.data.length - 1]); // ✅ latest
+      }
+    })
+    .catch(err => console.log(err));
+}, []);
+
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -39,8 +54,12 @@ export default function OrderSuccess() {
     );
   }
 
-  const taxAmount = order.subtotal * 0.18;
-  const grandTotal = order.subtotal + taxAmount;
+ const subtotal = Number(order.subtotal || 0);
+const taxAmount = Number(order.gst || 0);
+const shipping = Number(order.shipping || 0);
+const grandTotal = Number(order.total || 0);
+
+
 
   return (
     <div className="bg-[#FAF7ED] min-h-screen overflow-x-hidden">
@@ -126,12 +145,16 @@ export default function OrderSuccess() {
 
               {/* DYNAMIC META BAR */}
               <div className="bg-[#1C3A2C] p-6 md:p-8 rounded-sm shadow-xl flex flex-wrap justify-between items-center gap-6 border-b-4 border-[#D4AF37] mb-12">
-                <MetaItem label="Order ID" value={order.orderId} />
-                <MetaItem label="Date" value={order.date} />
+                <MetaItem label="Order ID" value={order.displayOrderId} />
+                <MetaItem label="Date" value={new Date(order.date).toLocaleDateString()} />
                 <MetaItem label="Status" value="Confirmed" isStatus />
-                <button className="flex items-center gap-2 bg-[#D4AF37] text-[#1C3A2C] px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-all">
-                  <Download size={14} /> Invoice
+                <button  onClick={openInvoice}
+                className="flex items-center gap-2 bg-[#D4AF37] text-[#1C3A2C] px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-all"
+                >
+                <Download size={14} />
+                 Invoice
                 </button>
+
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
@@ -142,21 +165,24 @@ export default function OrderSuccess() {
                     </h2>
                     
                     <div className="divide-y divide-[#FAF7ED]">
-                      {order.items.map((item) => (
+                      {order.products?.map((item) => (
                         <div key={item.id} className="flex items-center gap-6 py-6">
                           <img 
-                            src={item.image} 
+                            src={item.img} 
                             alt={item.name} 
                             className="w-20 h-24 object-cover border border-[#E5DDCC]" 
                           />
                           <div className="flex-grow">
                             <h4 className="text-[#1C3A2C] font-semibold text-lg">{item.name}</h4>
                             <p className="text-xs text-gray-400 uppercase tracking-widest">
-                              {item.category || 'Jewellery'} | Qty: {item.quantity}
+                              {item.category || 'Jewellery'} | Qty: {item.qty}
+
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[#1C3A2C] font-bold">₹{item.price.toLocaleString()}</p>
+                             <p className="text-[#1C3A2C] font-bold">
+                             ₹{Number(item.price || 0).toLocaleString()}
+                                      </p>
                           </div>
                         </div>
                       ))}
@@ -168,9 +194,9 @@ export default function OrderSuccess() {
                   <div className="bg-white border border-[#E5DDCC] p-8 sticky top-10 shadow-sm">
                     <h3 className="text-[#1C3A2C] font-semibold mb-6 border-b border-[#FAF7ED] pb-2 text-lg">Order Summary</h3>
                     <div className="space-y-4 text-sm">
-                      <div className="flex justify-between text-gray-500">
+                      {/* <div className="flex justify-between text-gray-500">
                         <span>Subtotal</span>
-                        <span className="text-[#1C3A2C] font-medium">₹{order.subtotal.toLocaleString()}</span>
+                        <span className="text-[#1C3A2C] font-medium">₹{subtotal.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between text-gray-500">
                         <span>GST (18%)</span>
@@ -183,7 +209,29 @@ export default function OrderSuccess() {
                       <div className="pt-6 mt-4 border-t border-[#E5DDCC] flex justify-between items-end">
                         <span className="text-base font-bold text-[#1C3A2C]">Total Amount</span>
                         <span className="text-2xl font-bold text-[#1C3A2C]">₹{grandTotal.toLocaleString()}</span>
-                      </div>
+                      </div> */}
+                      <div className="flex justify-between text-gray-500">
+  <span>Subtotal</span>
+  <span>₹{subtotal.toLocaleString()}</span>
+</div>
+
+<div className="flex justify-between text-gray-500">
+  <span>GST (18%)</span>
+  <span>₹{taxAmount.toLocaleString()}</span>
+</div>
+
+<div className="flex justify-between text-gray-500">
+  <span>Shipping</span>
+  <span>₹{shipping.toLocaleString()}</span>
+</div>
+
+<div className="pt-6 mt-4 border-t flex justify-between">
+  <span className="font-bold">Total Amount</span>
+  <span className="font-bold">₹{grandTotal.toLocaleString()}</span>
+</div>
+
+                      
+
                     </div>
 
                     <div className="mt-10">

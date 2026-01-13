@@ -1,11 +1,10 @@
 import DatabaseConnection from "./configs/db.config.js";
 import dotenv from "dotenv";
 import app from "./app.js";
-import orderRoutes from "./routes/order.routes.js";
-import reviewRoutes from "./routes/review.routes.js";
-import addressRoutes from "./routes/address.routes.js";
-import paymentRoutes from "./routes/payment.routes.js";
-
+import orderRoutes from "./routers/order/order.routes.js";
+import reviewRoutes from "./routers/order/review.routes.js";
+import addressRoutes from "./routers/order/address.routes.js";
+import paymentRoutes from "./routers/order/payment.routes.js";
 
 dotenv.config({
     path:"./.env"

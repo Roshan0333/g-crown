@@ -4,8 +4,9 @@ import {
   createOrder,
   updateOrderStatus,
   generateInvoice,
-  saveOrder
-} from "../controllers/order.controller.js";
+  saveOrder,
+  cancelOrder
+} from "../../controllers/order/order.controller.js";
 
 const router = express.Router();
 
@@ -14,5 +15,6 @@ router.post("/create", createOrder);
 router.put("/:id/status", updateOrderStatus);
 router.get("/:id/invoice", generateInvoice);
 router.post("/save", saveOrder);
+router.put("/cancel/:id", cancelOrder);
 
 export default router;

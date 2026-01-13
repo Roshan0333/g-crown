@@ -3,16 +3,23 @@ import mongoose, { Schema } from "mongoose";
 const auth_Schema = new Schema({
     email: {
         type: String,
-        unique: true
+        unique: true,
+        required: true
     },
     password: {
+        type: String,
+        required: true
+    },
+    profileImage:{
         type: String
     },
     firstName: {
-        type: String
+        type: String,
+        required: true
     },
     lastName: {
-        type: String
+        type: String,
+        required: true
     },
     contact: {
         type: Number,

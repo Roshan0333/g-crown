@@ -21,11 +21,22 @@ export default function Checkout() {
     city: "", postalCode: "", phone: "", cardNum: "", expiry: "", cvc: ""
   });
 
-  const { subtotal, shipping, total } = useMemo(() => {
-    const sub = getCartTotal();
-    const ship = sub > 0 ? 12.00 : 0;
-    return { subtotal: sub, shipping: ship, total: sub + ship };
-  }, [getCartTotal]);
+  const GST_RATE = 0.18;
+
+const { subtotal, gst, shipping, total } = useMemo(() => {
+  const sub = getCartTotal();
+  const gstAmount = sub * GST_RATE;
+  const ship = sub > 0 ? 12.0 : 0;
+  const grandTotal = sub + gstAmount + ship;
+
+  return {
+    subtotal: sub,
+    gst: gstAmount,
+    shipping: ship,
+    total: grandTotal
+  };
+}, [getCartTotal]);
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,23 +67,27 @@ export default function Checkout() {
       name: "CROWN Jewellery",
       description: "Order Payment",
       order_id: data.id,
+      
+        handler: async function (response) {
 
-      handler: async function (response) {
-        // Payment verify backend ला
-        await axios.post("http://localhost:3000/api/payment/verify", response);
+  // 🔴 NEW: verify API ला cartItems + total पाठव
+  await axios.post("http://localhost:3000/api/payment/verify", {
+    razorpay_order_id: response.razorpay_order_id,
+    razorpay_payment_id: response.razorpay_payment_id,
+    razorpay_signature: response.razorpay_signature,
+    cartItems: cartItems,   // 🔴 NEW
+    totalAmount: total,
+    address: selectedAddress,
+    subtotal: subtotal,
+    gst: gst,
+    shipping: shipping
+  });
 
-        const finalOrderDetails = {
-          items: cartItems,
-          address: selectedAddress,
-          total: total,
-          paymentId: response.razorpay_payment_id,
-          status: "Paid"
-        };
-                  await axios.post("http://localhost:3000/api/orders/create", finalOrderDetails);
+ 
 
-        clearCart();
-        navigate("/order-success", { state: { order: finalOrderDetails } });
-      },
+  clearCart();
+  navigate("/order-success");
+},
 
       prefill: {
         name: selectedAddress.firstName,
@@ -196,10 +211,28 @@ export default function Checkout() {
                 ))}
               </div>
               <div className="space-y-3 border-t border-[#E5DDCC] pt-6">
-                <div className="flex justify-between text-sm text-gray-500 italic"><span>Shipping</span><span>${shipping.toFixed(2)}</span></div>
-                <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
-                  <span>Grand Total</span><span>${total.toFixed(2)}</span>
-                </div>
+
+  <div className="flex justify-between text-sm text-gray-500">
+    <span>Subtotal</span>
+    <span>₹{subtotal.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-sm text-gray-500">
+    <span>GST (18%)</span>
+    <span>₹{gst.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-sm text-gray-500 italic">
+    <span>Shipping</span>
+    <span>₹{shipping.toFixed(2)}</span>
+  </div>
+
+  <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
+    <span>Grand Total</span>
+    <span>₹{total.toFixed(2)}</span>
+  </div>
+
+
               </div>
             </div>
           </aside>

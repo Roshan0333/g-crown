@@ -1,229 +1,4 @@
-// import React from "react";
-// import Earing from "../../../assets/NewArrivalAssets/earrings-1.png"
-// import { useEffect, useState } from "react";
-// import axios from "axios";
 
-// const MyOrders = () => {
-//   const [orderList, setOrderList] = useState([]);
-
-
-
-//   return (
-//     <div className="font-serif max-w-5xl animate-fadeIn px-2 sm:px-0">
-//       {/* Header Section */}
-//       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-//         <h2 className="text-xl sm:text-2xl font-medium text-[#1B3022]">Orders (2)</h2>
-//         <div className="flex items-center gap-2 text-sm w-full sm:w-auto">
-//           <span className="text-gray-600 whitespace-nowrap">Sort by :</span>
-//           <div className="relative flex-1 sm:flex-none">
-//             <select className="w-full appearance-none bg-[#F2EDE1] border border-[#D9D1C1] px-4 py-1.5 pr-8 rounded-sm outline-none text-sm cursor-pointer font-medium">
-//               <option>All</option>
-//               <option>Pending</option>
-//               <option>Delivered</option>
-//             </select>
-//             <span className="absolute right-3 top-2 pointer-events-none text-[10px]">▼</span>
-//           </div>
-//         </div>
-//       </div>
-
-//       {orderList.map((order, idx) => (
-//         <div key={idx} className="bg-white border border-gray-100 mb-6 sm:mb-10 overflow-hidden shadow-sm">
-          
-//           {/* Order Header Bar: Mobile pe 2x2 grid, Desktop pe 4 columns */}
-//           <div className="bg-[#1B3022] text-white p-4 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Orders ID</p>
-//               <p className="text-[11px] sm:text-xs font-medium truncate">{order.id}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Total Payment</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.total}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Payment Method</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.method}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Delivery Date</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.date}</p>
-//             </div>
-//           </div>
-
-//           {/* Product Items List */}
-//           <div className="px-4 sm:px-6 py-2">
-//             {order.products.map((item, pIdx) => (
-//               <div key={pIdx} className="flex items-center gap-4 sm:gap-5 py-4 border-b border-gray-100 last:border-0">
-//                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#F9F9F9] rounded overflow-hidden flex-shrink-0">
-//                   <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-//                 </div>
-//                 <div className="flex-1">
-//                   <h4 className="text-xs sm:text-sm font-bold text-[#1B3022]">{item.name}</h4>
-//                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1 font-medium">{item.detail}</p>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-
-//           {/* Status & Actions Footer: Mobile pe stack hoga */}
-//           <div className="px-4 sm:px-6 py-5 border-t border-gray-50 flex flex-col lg:flex-row justify-between items-start lg:items-center bg-[#FCFAFA] gap-4">
-//             <div className="flex items-center gap-3 w-full lg:w-auto">
-//               {/* Status Tag */}
-//               <span className={`px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase border rounded-sm ${
-//                 order.status === "Accepted" 
-//                 ? "bg-[#FFF5EE] text-[#F39C12] border-[#FFE5D2]" 
-//                 : "bg-[#F0FFF4] text-[#4DB6AC] border-[#D1F2EB]"
-//               }`}>
-//                 {order.status}
-//               </span>
-//               <p className="text-[12px] sm:text-[13px] text-gray-500 italic truncate">{order.statusText}</p>
-//             </div>
-
-//             {/* Buttons Group: Mobile pe grid or full width */}
-//             <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
-//               {order.status === "Accepted" ? (
-//                 <>
-//                   <button className="bg-[#1B3022] text-white px-4 sm:px-6 py-2.5 text-[11px] sm:text-xs font-medium hover:bg-[#253d2c]">
-//                     Track Order
-//                   </button>
-//                   <button className="border border-[#1B3022] text-[#1B3022] px-4 sm:px-6 py-2.5 text-[11px] sm:text-xs font-medium bg-white">
-//                     Invoice
-//                   </button>
-//                   <button className="col-span-2 mt-2 sm:mt-0 text-[#FF5C5C] text-[11px] sm:text-xs font-bold px-4 text-center">
-//                     Cancel Order
-//                   </button>
-//                 </>
-//               ) : (
-//                 <>
-//                   <button className="bg-[#1B3022] text-white px-4 sm:px-8 py-2.5 text-[11px] sm:text-xs font-medium hover:bg-[#253d2c]">
-//                     Add Review
-//                   </button>
-//                   <button className="border border-[#1B3022] text-[#1B3022] px-4 sm:px-8 py-2.5 text-[11px] sm:text-xs font-medium bg-white">
-//                     Invoice
-//                   </button>
-//                 </>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default MyOrders;
-// import React from "react";
-// import Earing from "../../../assets/NewArrivalAssets/earrings-1.png"
-// import { useEffect, useState } from "react";
-// import axios from "axios";
-
-// const MyOrders = () => {
-//   const [orderList, setOrderList] = useState([]);
-
-
-
-//   return (
-//     <div className="font-serif max-w-5xl animate-fadeIn px-2 sm:px-0">
-//       {/* Header Section */}
-//       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4">
-//         <h2 className="text-xl sm:text-2xl font-medium text-[#1B3022]">Orders (2)</h2>
-//         <div className="flex items-center gap-2 text-sm w-full sm:w-auto">
-//           <span className="text-gray-600 whitespace-nowrap">Sort by :</span>
-//           <div className="relative flex-1 sm:flex-none">
-//             <select className="w-full appearance-none bg-[#F2EDE1] border border-[#D9D1C1] px-4 py-1.5 pr-8 rounded-sm outline-none text-sm cursor-pointer font-medium">
-//               <option>All</option>
-//               <option>Pending</option>
-//               <option>Delivered</option>
-//             </select>
-//             <span className="absolute right-3 top-2 pointer-events-none text-[10px]">▼</span>
-//           </div>
-//         </div>
-//       </div>
-
-//       {orderList.map((order, idx) => (
-//         <div key={idx} className="bg-white border border-gray-100 mb-6 sm:mb-10 overflow-hidden shadow-sm">
-          
-//           {/* Order Header Bar: Mobile pe 2x2 grid, Desktop pe 4 columns */}
-//           <div className="bg-[#1B3022] text-white p-4 grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Orders ID</p>
-//               <p className="text-[11px] sm:text-xs font-medium truncate">{order.id}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Total Payment</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.total}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Payment Method</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.method}</p>
-//             </div>
-//             <div className="min-w-0">
-//               <p className="text-[9px] sm:text-[10px] uppercase opacity-60 tracking-widest mb-1 truncate">Delivery Date</p>
-//               <p className="text-[11px] sm:text-xs font-medium">{order.date}</p>
-//             </div>
-//           </div>
-
-//           {/* Product Items List */}
-//           <div className="px-4 sm:px-6 py-2">
-//             {order.products.map((item, pIdx) => (
-//               <div key={pIdx} className="flex items-center gap-4 sm:gap-5 py-4 border-b border-gray-100 last:border-0">
-//                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#F9F9F9] rounded overflow-hidden flex-shrink-0">
-//                   <img src={item.img} alt={item.name} className="w-full h-full object-cover" />
-//                 </div>
-//                 <div className="flex-1">
-//                   <h4 className="text-xs sm:text-sm font-bold text-[#1B3022]">{item.name}</h4>
-//                   <p className="text-[11px] sm:text-xs text-gray-400 mt-1 font-medium">{item.detail}</p>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-
-//           {/* Status & Actions Footer: Mobile pe stack hoga */}
-//           <div className="px-4 sm:px-6 py-5 border-t border-gray-50 flex flex-col lg:flex-row justify-between items-start lg:items-center bg-[#FCFAFA] gap-4">
-//             <div className="flex items-center gap-3 w-full lg:w-auto">
-//               {/* Status Tag */}
-//               <span className={`px-3 py-1 text-[9px] sm:text-[10px] font-bold uppercase border rounded-sm ${
-//                 order.status === "Accepted" 
-//                 ? "bg-[#FFF5EE] text-[#F39C12] border-[#FFE5D2]" 
-//                 : "bg-[#F0FFF4] text-[#4DB6AC] border-[#D1F2EB]"
-//               }`}>
-//                 {order.status}
-//               </span>
-//               <p className="text-[12px] sm:text-[13px] text-gray-500 italic truncate">{order.statusText}</p>
-//             </div>
-
-//             {/* Buttons Group: Mobile pe grid or full width */}
-//             <div className="grid grid-cols-2 sm:flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
-//               {order.status === "Accepted" ? (
-//                 <>
-//                   <button className="bg-[#1B3022] text-white px-4 sm:px-6 py-2.5 text-[11px] sm:text-xs font-medium hover:bg-[#253d2c]">
-//                     Track Order
-//                   </button>
-//                   <button className="border border-[#1B3022] text-[#1B3022] px-4 sm:px-6 py-2.5 text-[11px] sm:text-xs font-medium bg-white">
-//                     Invoice
-//                   </button>
-//                   <button className="col-span-2 mt-2 sm:mt-0 text-[#FF5C5C] text-[11px] sm:text-xs font-bold px-4 text-center">
-//                     Cancel Order
-//                   </button>
-//                 </>
-//               ) : (
-//                 <>
-//                   <button className="bg-[#1B3022] text-white px-4 sm:px-8 py-2.5 text-[11px] sm:text-xs font-medium hover:bg-[#253d2c]">
-//                     Add Review
-//                   </button>
-//                   <button className="border border-[#1B3022] text-[#1B3022] px-4 sm:px-8 py-2.5 text-[11px] sm:text-xs font-medium bg-white">
-//                     Invoice
-//                   </button>
-//                 </>
-//               )}
-//             </div>
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default MyOrders;
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Earing from "../../../assets/NewArrivalAssets/earrings-1.png";
@@ -238,11 +13,8 @@ const [comment, setComment] = useState("");
 const [selectedOrderId, setSelectedOrderId] = useState(null);
 
 
-
-
-
-const openInvoice = (id) => {
-  window.open(`http://localhost:3000/api/orders/${id}/invoice`, "_blank");
+const openInvoice = (orderId) => {
+  window.open(`http://localhost:3000/api/orders/${orderId}/invoice`, "_blank");
 };
 
   useEffect(() => {
@@ -263,11 +35,28 @@ const submitReview = async () => {
 };
 
 
+const cancelOrder = async (id) => {
+  if (!window.confirm("Are you sure you want to cancel this order?")) return;
+
+  await axios.put(`http://localhost:3000/api/orders/cancel/${id}`);
+
+  alert("Your order has been cancelled");
+
+  setOrderList(prev =>
+    prev.map(o =>
+      o._id === id
+        ? { ...o, status: "Cancelled", statusText: "Your order has been cancelled by you" }
+        : o
+    )
+  );
+};
 
 
     const filteredOrders = filter === "All"
     ? orderList
     : orderList.filter(o => o.status === filter);
+
+    
 
   return (
     <div className="font-serif max-w-5xl animate-fadeIn px-2 sm:px-0">
@@ -286,6 +75,8 @@ const submitReview = async () => {
           <option value="Accepted">Accepted</option>
           <option value="Delivered">Delivered</option>
           <option value="Cancelled">Cancelled</option>
+  order
+
         </select>
         </div>
       </div>
@@ -297,7 +88,7 @@ const submitReview = async () => {
           <div className="bg-[#1B3022] text-white p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-xs opacity-60">Order ID</p>
-              <p>{order.orderId}</p>
+              <p>{order.displayOrderId}</p>
             </div>
             <div>
               <p className="text-xs opacity-60">Total</p>
@@ -309,7 +100,8 @@ const submitReview = async () => {
             </div>
             <div>
               <p className="text-xs opacity-60">Date</p>
-              <p>{order.date}</p>
+              <p>{new Date(order.date).toLocaleDateString()}</p>
+
             </div>
           </div>
 
@@ -325,6 +117,8 @@ const submitReview = async () => {
                 <div>
                   <h4 className="font-bold">{item.name}</h4>
                   <p className="text-sm text-gray-400">{item.detail}</p>
+                    <p className="text-xs text-gray-500">Qty: {item.qty}</p>   {/* 🔴 NEW */}
+
                 </div>
               </div>
             ))}
@@ -349,8 +143,31 @@ const submitReview = async () => {
                   <button className="bg-[#1B3022] text-white px-4 py-2 text-sm">
                     Track Order
                   </button>
-                  <button className="border px-4 py-2 text-sm">Invoice</button>
-                  <button className="text-red-500 text-sm">Cancel</button>
+                  <button
+                  onClick={() => openInvoice(order._id)}
+                  className="border px-4 py-2 text-sm"
+                  >
+                  Invoice
+                    </button>
+                     <button
+  type="button"
+  onClick={() => {
+    setShowReview(true);
+       setSelectedOrderId(order._id);   // 🔴 हा line missing होता
+
+  }}
+  className="bg-[#1B3022] text-white px-4 py-2 text-sm"
+>
+  Add Review
+</button>
+
+                 <button
+  onClick={() => cancelOrder(order._id)}
+  className="text-red-500 text-sm"
+>
+  Cancel
+</button>
+
                 </>
               ) : (
                 <>
@@ -406,16 +223,20 @@ const submitReview = async () => {
 </button>
 
     </div>
+    
   </div>
 )}
+                <button className="bg-[#1B3022] text-white px-4 py-2 text-sm">
+                    Track Order
+                  </button>
+                  <button
+                  onClick={() => openInvoice(order._id)}
+                  className="border px-4 py-2 text-sm"
+                  >
+                  Invoice
+                    </button>
+                     <button className="text-red-500 text-sm">Cancel</button>
 
-
-            <button
-                   onClick={() => openInvoice(order._id)}
-                     className="border px-4 py-2 text-sm"
-                              >
-                       Invoice
-                          </button>
 
                 </>
               )}
