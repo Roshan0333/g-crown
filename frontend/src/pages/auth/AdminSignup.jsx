@@ -131,7 +131,7 @@ const AdminSignUp = () => {
 
         <nav className="absolute left-8 top-10 lg:left-14">
           <button
-            onClick={() => navigate("/admin-login")}
+            onClick={() => navigate("/admin/login")}
             className="group flex items-center gap-2 text-[12px] font-black uppercase tracking-[0.2em] text-[#1E3A2F] transition-all hover:opacity-60"
           >
             <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />

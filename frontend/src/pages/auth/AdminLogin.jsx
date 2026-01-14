@@ -8,13 +8,14 @@ import { axiosPostService } from "../../services/axios";
 
 const AdminSignIn = () => {
   const navigate = useNavigate();
-  
+
   // UI State
   const [step, setStep] = useState("login"); // 'login' | 'forgot' | 'otp'
   const [showPassword, setShowPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false); // For reset step
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(0);
+  const [sendOtp, setSendOtp] = useState()
 
   // Form State
   const [formData, setFormData] = useState({
@@ -50,16 +51,23 @@ const AdminSignIn = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const apiResponse = await axiosPostService("/admin/auth/login", {
+
+      let adminData = {
         email: formData.email,
         password: formData.password
-      });
 
-      if (apiResponse.ok) {
-        localStorage.setItem("role", "admin");
-        navigate("/admin/");
-      } else {
+      }
+
+      const apiResponse = await axiosPostService("/admin/auth/login",adminData );
+
+      if (!apiResponse.ok) {
+        console.log(apiResponse)
         alert(apiResponse.data.message || "Invalid credentials provided.");
+        return
+      } else {
+        // localStorage.setItem("role", "admin");
+        navigate("/admin");
+        console.log(apiResponse.data.message)
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -73,17 +81,18 @@ const AdminSignIn = () => {
     if (formData.newPassword !== formData.confirmPassword) {
       return alert("Passwords do not match.");
     }
-    
+
     setIsLoading(true);
     try {
-      const response = await axiosPostService("/admin/auth/forgot-password-request", { 
-        email: formData.email 
-      });
-      if (response.ok) {
-        setStep("otp");
-        setResendTimer(60);
+      const apiResponse = await axiosPostService("/admin/auth/forgetPasswordOtp", {
+        email: formData.email});
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "Failed to send verification code.");
+        return
       } else {
-        alert(response.data.message || "Failed to send verification code.");
+        setStep("otp");
+        setSendOtp(apiResponse.data.data)
+        setResendTimer(60);
       }
     } catch (error) {
       console.error("OTP Request Error:", error);
@@ -96,17 +105,17 @@ const AdminSignIn = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await axiosPostService("/admin/auth/verify-reset-otp", {
+      const apiResponse = await axiosPostService("/admin/auth/forgetPassword", {
         email: formData.email,
-        otp: formData.otp,
-        newPassword: formData.newPassword
+        password: formData.newPassword
       });
 
-      if (response.ok) {
-        alert("Account secured. Password updated successfully.");
-        navigate("/"); 
-      } else {
+      if (!apiResponse.ok) {
         alert(response.data.message || "The code entered is incorrect.");
+        return
+      } else {
+        alert("Account secured. Password updated successfully.");
+        navigate("/");
       }
     } catch (error) {
       console.error("Verification Error:", error);
@@ -117,7 +126,7 @@ const AdminSignIn = () => {
 
   return (
     <section className="flex h-svh w-full overflow-hidden bg-[#FBF6EA] font-serif selection:bg-[#1E3A2F]/30 text-[#1E3A2F]">
-      
+
       {/* Left Panel: Brand Experience */}
       <div className="relative hidden w-[45%] lg:block overflow-hidden bg-[#1E3A2F]">
         <motion.img
@@ -130,7 +139,7 @@ const AdminSignIn = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1E3A2F]/80 via-transparent to-transparent" />
         <div className="absolute inset-10 border border-white/20 pointer-events-none" />
-        
+
         <div className="absolute inset-x-14 bottom-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -140,7 +149,7 @@ const AdminSignIn = () => {
           >
             <h2 className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-[#CBA135]">Secure Access</h2>
             <p className="text-lg leading-relaxed text-white/90 font-light italic">
-              {step === "login" 
+              {step === "login"
                 ? "“Precision is not just a metric; it is our heritage.” — Authorized Personnel Portal."
                 : "Security protocols active. Follow the recovery steps to regain system access."}
             </p>
@@ -150,7 +159,7 @@ const AdminSignIn = () => {
 
       {/* Right Panel: Auth Engine */}
       <div className="relative flex w-full flex-col overflow-y-auto bg-[#FDF9F0] lg:w-[55%]">
-        
+
         <nav className="absolute left-8 top-10 lg:left-12">
           <button
             onClick={() => {
@@ -159,16 +168,16 @@ const AdminSignIn = () => {
             }}
             className="group flex items-center gap-2 text-[12px] font-bold uppercase tracking-[0.2em] transition-all hover:text-[#CBA135]"
           >
-            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" /> 
+            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-1" />
             {step === "login" ? "Return to Gallery" : "Return to Login"}
           </button>
         </nav>
 
         <main className="m-auto w-full max-w-[480px] px-8 py-24">
           <header className="mb-12">
-            <motion.img 
+            <motion.img
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              src={logo} alt="Brand Logo" className="mb-10 h-16 w-auto object-contain" 
+              src={logo} alt="Brand Logo" className="mb-10 h-16 w-auto object-contain"
             />
             <h1 className="text-4xl font-normal tracking-tight lg:text-5xl">
               {step === "login" ? "Admin Login" : step === "forgot" ? "Reset Access" : "Identity Check"}
@@ -178,14 +187,14 @@ const AdminSignIn = () => {
 
           <AnimatePresence mode="wait">
             {step === "login" && (
-              <motion.form 
+              <motion.form
                 key="login" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                 className="space-y-6" onSubmit={handleAdminLogin}
               >
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold uppercase tracking-widest opacity-70">Corporate Email</label>
                   <input
-                    id="email" required type="email" value={formData.email} onChange={handleChange}
+                    id="email" required type="email" value={formData.email} onChange={(e) => handleChange(e)}
                     className="auth-input w-full border-b border-gray-200 bg-transparent py-4 outline-none transition-all focus:border-[#CBA135]"
                     placeholder="name@g-crown.com"
                   />
@@ -212,7 +221,7 @@ const AdminSignIn = () => {
             )}
 
             {step === "forgot" && (
-              <motion.form 
+              <motion.form
                 key="forgot" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                 className="space-y-6" onSubmit={handleRequestOtp}
               >
@@ -224,14 +233,14 @@ const AdminSignIn = () => {
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest opacity-70">New Password</label>
                     <div className="relative">
-                      <input 
-                        id="newPassword" 
+                      <input
+                        id="newPassword"
 
-                        required 
-                        type={showNewPassword ? "text" : "password"} 
-                        value={formData.newPassword} 
-                        onChange={handleChange} 
-                        className="auth-input w-full border-b border-gray-200 bg-transparent py-4 pr-10 outline-none focus:border-[#CBA135]" 
+                        required
+                        type={showNewPassword ? "text" : "password"}
+                        value={formData.newPassword}
+                        onChange={handleChange}
+                        className="auth-input w-full border-b border-gray-200 bg-transparent py-4 pr-10 outline-none focus:border-[#CBA135]"
                       />
                       <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#CBA135]">
                         {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -241,13 +250,13 @@ const AdminSignIn = () => {
                   <div className="space-y-2">
                     <label className="text-[11px] font-bold uppercase tracking-widest opacity-70">Confirm Password</label>
                     <div className="relative">
-                      <input 
-                        id="confirmPassword" 
-                        required 
-                        type={showNewPassword ? "text" : "password"} 
-                        value={formData.confirmPassword} 
-                        onChange={handleChange} 
-                        className="auth-input w-full border-b border-gray-200 bg-transparent py-4 pr-10 outline-none focus:border-[#CBA135]" 
+                      <input
+                        id="confirmPassword"
+                        required
+                        type={showNewPassword ? "text" : "password"}
+                        value={formData.confirmPassword}
+                        onChange={handleChange}
+                        className="auth-input w-full border-b border-gray-200 bg-transparent py-4 pr-10 outline-none focus:border-[#CBA135]"
                       />
                       <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#CBA135]">
                         {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -260,7 +269,7 @@ const AdminSignIn = () => {
             )}
 
             {step === "otp" && (
-              <motion.form 
+              <motion.form
                 key="otp" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}
                 className="space-y-8 text-center" onSubmit={handleFinalVerify}
               >
@@ -273,11 +282,11 @@ const AdminSignIn = () => {
                     placeholder="000000"
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider">
                   <span className="opacity-50">Expires in: {resendTimer}s</span>
-                  <button 
-                    disabled={resendTimer > 0} 
+                  <button
+                    disabled={resendTimer > 0}
                     onClick={() => { setResendTimer(60); }}
                     className="flex items-center gap-2 text-[#CBA135] disabled:opacity-30"
                   >

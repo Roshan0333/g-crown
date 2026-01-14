@@ -31,7 +31,7 @@ const adminEmail = async (req, res, next) => {
            return next()
         }
 
-        return res.status(401).json(new ApiError(401, null, "Email not found"));
+        return res.status(401).json(new ApiError(401, "Email not found"));
     }
     catch(err){
         return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
