@@ -68,140 +68,116 @@ import { axiosPostService, axiosPutService, axiosGetService } from "../services/
 
 const FavoritesContext = createContext();
 
-export const useFavorites = () => {
-  const context = useContext(FavoritesContext);
-  if (!context) {
-    throw new Error("useFavorites must be used within FavoritesProvider");
-  }
-  return context;
-};
+export const useFavorites = () => useContext(FavoritesContext);
 
 export const FavoritesProvider = ({ children }) => {
+
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("g-crown-favorites");
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Sync LocalStorage with favorites
+  // Sync to LocalStorage
   useEffect(() => {
-    localStorage.setItem("g-crown-favorites", JSON.stringify(favorites));
+    localStorage.setItem(
+      "g-crown-favorites",
+      JSON.stringify(favorites.map(f => f._id))
+    );
+
   }, [favorites]);
 
-
-  //Get All Item
+  // Fetch Wishlist Once From Backend
   useEffect(() => {
-    (async () => {
-      try {
-        const apiResponse = await axiosGetService("/customer/wishlist/allitem");
-
-        if (apiResponse.ok) {
-          const list = apiResponse.data.data[0].products;
-
-
-          // ensure product.id exists 
-          const formatted = list.map(p => ({
-            ...p,
-            id: p._id ?? p.id,  // normalized
-          }));
-          setFavorites(formatted);
-          localStorage.setItem("g-crown-favorites", JSON.stringify(formatted));
-        }
-      } catch (err) {
-        console.log("Load Wishlist Error:", err);
-      }
-    })();
+    fetchWishlist();
   }, []);
 
+  const fetchWishlist = async () => {
+    try {
+      const apiResponse = await axiosGetService("/customer/wishlist/allitem");
 
-  // 🌟 Toggle Favorite (Add / Remove) — UI + Backend
+      if (apiResponse.ok) {
+        const list = apiResponse.data.data[0]?.products || [];
+
+        const formatted = list.map(p => ({
+          _id: p._id,
+          slug: p.slug,
+          name: p.name,
+          price: p.price,
+          stockStatus: p.stockStatus,
+          productImage: p.productImage,   // ⭐ important for images
+          category: p.category
+        }));
+
+
+        setFavorites(formatted);
+        localStorage.setItem(
+          "g-crown-favorites",
+          JSON.stringify(formatted.map(x => x._id))
+        );
+
+      }
+    } catch (err) {
+      console.log("Wishlist load error:", err);
+    }
+  };
+
   const toggleFavorite = async (product) => {
-    const exists = favorites.some((item) => item.id === product.id);
+    const productId = product._id || product.id;
+
+    const exists = favorites.some(item => item._id === productId);
 
     if (!exists) {
-      // optimistic UI update
-      setFavorites((prev) => [...prev, product]);
+      // Optimistic Add
+      setFavorites(prev => [...prev, { ...product, _id: productId }]);
 
-      const apiResponse = await axiosPostService("/customer/wishlist/add", {
-        // productId: product._id,
-        productId: "6962bd30609758b34b282294"
+      const response = await axiosPostService("/customer/wishlist/add", {
+        productId
       });
 
-      if (!apiResponse.ok) {
-        // revert UI if failed
-        setFavorites((prev) => prev.filter((item) => item.id !== product.id));
-        alert(apiResponse.data.message || "Failed to add in wishlist");
+      if (!response.ok) {
+        setFavorites(prev => prev.filter(item => item._id !== productId));
+        alert(response.data.message || "Failed to add to wishlist");
       }
     } else {
-      // optimistic remove UI
-      setFavorites((prev) => prev.filter((item) => item.id !== product.id));
+      // Optimistic Remove
+      setFavorites(prev => prev.filter(item => item._id !== productId));
 
-      const apiResponse = await axiosPutService("/customer/wishlist/remove", {
-        // productId: product.id,
-        productId: "6962b7d6f7c0bca69ae3dfd2"
+      const response = await axiosPutService("/customer/wishlist/remove", {
+        productId
       });
 
-      if (!apiResponse.ok) {
-        // rollback UI if delete failed
-        setFavorites((prev) => [...prev, product]);
-        alert(apiResponse.data.message || "Failed to remove from wishlist");
+      if (!response.ok) {
+        alert(response.data.message || "Failed to remove item");
+        setFavorites(prev => [...prev, product]);
       }
     }
   };
 
-
-  // 🧹 Remove Single Item (UI + Backend)
   const removeFromFavorites = async (productId) => {
-    setFavorites((prev) => prev.filter((item) => item.id !== productId));
+    setFavorites(prev => prev.filter(item => item._id !== productId));
 
-    const apiResponse = await axiosPutService("/customer/wishlist/remove", {
-      productId,
+    const response = await axiosPutService("/customer/wishlist/remove", {
+      productId
     });
 
-    if (!apiResponse.ok) {
-      alert(apiResponse.data.message || "Failed to remove item");
+    if (!response.ok) {
+      alert(response.data.message || "Failed to remove item");
     }
   };
 
-
-  // 🗑 Clear All Wishlist (UI + Backend)
   const clearFavorites = async () => {
     setFavorites([]);
 
-    const apiResponse = await axiosPutService("/customer/wishlist/removeall");
+    const response = await axiosPutService("/customer/wishlist/removeall");
 
-    if (!apiResponse.ok) {
-      console.log("Failed to clear wishlist from backend");
+    if (!response.ok) {
+      console.log("Failed to clear wishlist");
     }
   };
 
-
-  // ❤️ Check If Favorite
   const isFavorite = (productId) => {
-    return favorites.some((item) => item.id === productId);
+    return favorites.some(item => item._id === productId);
   };
-
-
-  const fetchWishlist = async () => {
-  try {
-    const apiResponse = await axiosGetService("/customer/wishlist/allitem");
-
-    if (apiResponse.ok) {
-      const list = apiResponse.data.data[0].products;
-
-      const formatted = list.map(p => ({
-        ...p,
-        id: p._id ?? p.id
-      }));
-
-      setFavorites(formatted);
-      localStorage.setItem("g-crown-favorites", JSON.stringify(formatted));
-    }
-  } catch (err) {
-    console.log("Wishlist load error:", err);
-  }
-};
-
-
 
   return (
     <FavoritesContext.Provider

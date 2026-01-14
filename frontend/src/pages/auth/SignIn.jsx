@@ -123,6 +123,20 @@ const SignIn = () => {
     }
   };
 
+  const resendOtp = async () => {
+    const apiResponse = await axiosPostService(
+        "/customer/auth/forgetPasswordOtp",
+        { email }
+      )
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "Otp Sending Failed");
+        return
+      }
+      else {
+        setSendOtp(apiResponse.data.data);
+      }
+  }
+
   return (
     <section className="flex h-svh w-full overflow-hidden bg-[#FBF6EA] font-serif selection:bg-[#1E3A2F]/20">
 
@@ -319,7 +333,7 @@ const SignIn = () => {
                   <SubmitButton isLoading={isLoading} label="Verify & Update Password" />
 
                   <p className="text-center text-[13px] text-gray-400">
-                    Didn't receive the code? <button type="button" className="text-[#1E3A2F] font-bold underline">Resend Code</button>
+                    Didn't receive the code? <button type="button" className="text-[#1E3A2F] font-bold underline" onClick={resendOtp}>Resend Code</button>
                   </p>
                 </form>
               </motion.div>

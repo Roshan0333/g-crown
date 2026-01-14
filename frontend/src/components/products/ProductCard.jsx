@@ -4,16 +4,30 @@ import { Heart, Minus, Plus } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import { useFavorites } from "../../context/FavoritesContext";
 
-export const ProductCard = ({ product }) => {
+const ProductCard = ({ product, allproducts }) => {
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
 
-  const favorited = isFavorite(product.id);
+  const favorited = isFavorite(product._id);
+
+  const salePrice = product?.price?.sale || 0;
+  const mrpPrice = product?.price?.mrp || 0;
+
+  const material = product?.attributes?.material || "";
+  const color = product?.attributes?.color || "";
+
+  const image =
+    product?.productImage?.length > 0
+      ? product.productImage[0]
+      : "/placeholder.jpg";
+
+  const rating = product?.rating?.avg || 0;
+  const totalReviews = product?.rating?.totalReviews || 0;
 
   const cartItem = useMemo(
-    () => cartItems.find((item) => item.id === product.id),
-    [cartItems, product.id]
+    () => cartItems.find((item) => item._id === product._id),
+    [cartItems, product._id]
   );
 
   const quantity = cartItem?.quantity || 0;
@@ -25,82 +39,59 @@ export const ProductCard = ({ product }) => {
 
   const handleIncrease = (e) => {
     e.stopPropagation();
-    updateQuantity(product.id, quantity + 1);
+    updateQuantity(product._id, quantity + 1);
   };
 
   const handleDecrease = (e) => {
     e.stopPropagation();
-    if (quantity === 1) removeFromCart(product.id);
-    else updateQuantity(product.id, quantity - 1);
+    if (quantity === 1) removeFromCart(product._id);
+    else updateQuantity(product._id, quantity - 1);
   };
 
   return (
     <div
       onClick={() =>
-        navigate(`/product/${product.id}`, { state: { product } })
+        navigate(`/product/${product._id}`, { state: { product, allproducts } })
       }
-      className="
-        group relative cursor-pointer
-        rounded-xl bg-[#fff9e9]
-        shadow-xl hover:shadow-3xl
-        transition-all duration-300
-        hover:-translate-y-1
-      "
+      className="group relative cursor-pointer rounded-xl bg-[#fff9e9] shadow-xl hover:shadow-3xl transition-all duration-300 hover:-translate-y-1"
     >
-      {/* Badge */}
-      {product.bestseller && (
-        <span className="absolute top-3 left-3 z-10 bg-[#CBA135] text-white text-[10px] px-2 py-1 tracking-widest rounded">
-          BESTSELLER
-        </span>
-      )}
-
       {/* Favorite */}
       <button
         onClick={(e) => {
           e.stopPropagation();
           toggleFavorite(product);
         }}
-        className="
-          absolute top-3 right-3 z-10
-          bg-white/90 backdrop-blur
-          p-2 rounded-full
-          shadow hover:scale-110 transition
-        "
+        className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur p-2 rounded-full shadow hover:scale-110 transition"
         aria-label="Toggle favorite"
       >
         <Heart
           size={16}
-          className={
-            favorited
-              ? "fill-red-500 text-red-500"
-              : "text-[#08221B]"
-          }
+          className={favorited ? "fill-red-500 text-red-500" : "text-[#08221B]"}
         />
       </button>
 
-      {/* Image */}
+      {/* Product Image */}
       <div className="relative h-56 sm:h-64 overflow-hidden rounded-t-xl bg-gray-100">
         <img
-          src={product.image}
+          src={image}
           alt={product.name}
-          className="
-            h-full w-full object-cover
-            transition-transform duration-500
-            group-hover:scale-110
-          "
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition" />
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-2">
         {/* Rating */}
-        <div className="text-[#CBA135] text-xs">
-          ★★★★★{" "}
-          <span className="text-[#08221B] text-[11px]">
-            ({product.reviews})
-          </span>
-        </div>
+        {rating > 0 ? (
+          <div className="text-[#CBA135] text-xs">
+            ★ {rating.toFixed(1)}
+            <span className="text-[#08221B] text-[11px] ml-1">
+              ({totalReviews})
+            </span>
+          </div>
+        ) : (
+          <div className="text-[11px] text-gray-500 italic">No Reviews</div>
+        )}
 
         {/* Title */}
         <h3 className="font-serif text-[15px] text-[#08221B] leading-snug line-clamp-1">
@@ -109,23 +100,21 @@ export const ProductCard = ({ product }) => {
 
         {/* Meta */}
         <p className="text-[11px] text-[#37654B]">
-          {product.material} · {product.color}
+          {material} · {color}
         </p>
 
         {/* Price */}
         <div className="flex items-end justify-between pt-2">
           <div>
             <p className="text-lg font-bold text-[#08221B]">
-              ₹{product.price.toLocaleString()}
+              ₹{salePrice.toLocaleString()}
             </p>
-            <p className="text-xs text-[#37654B] line-through">
-              ₹{product.oldPrice.toLocaleString()}
-            </p>
+            {mrpPrice > salePrice && (
+              <p className="text-xs text-[#37654B] line-through">
+                ₹{mrpPrice.toLocaleString()}
+              </p>
+            )}
           </div>
-
-          <span className="text-[10px] bg-red-500 text-white px-2 py-1 rounded font-semibold">
-            SAVE 10%
-          </span>
         </div>
 
         {/* Cart Controls */}
@@ -138,11 +127,7 @@ export const ProductCard = ({ product }) => {
               >
                 <Minus size={14} />
               </button>
-
-              <span className="text-sm font-semibold">
-                {quantity}
-              </span>
-
+              <span className="text-sm font-semibold">{quantity}</span>
               <button
                 onClick={handleIncrease}
                 className="h-10 w-10 flex items-center justify-center hover:bg-[#08221B] hover:text-white transition rounded-r-lg"
@@ -153,14 +138,7 @@ export const ProductCard = ({ product }) => {
           ) : (
             <button
               onClick={handleAddToCart}
-              className="
-                w-full h-10
-                bg-[#08221B] text-white
-                text-xs tracking-widest uppercase
-                rounded-lg
-                hover:bg-black
-                transition active:scale-95
-              "
+              className="w-full h-10 bg-[#08221B] text-white text-xs tracking-widest uppercase rounded-lg hover:bg-black transition active:scale-95"
             >
               Add to Cart
             </button>

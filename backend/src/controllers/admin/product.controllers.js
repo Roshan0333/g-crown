@@ -1,4 +1,5 @@
 import productModel from "../../models/common/product.models.js";
+import cloudinary from "../../configs/cloudinary.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
 
@@ -9,39 +10,62 @@ const uploadNewProduct = async (req, res) => {
             slug,
             sku,
             category,
-            collection,
+            productCollection,
             tags,
+            brand,
             attributes,
             price,
             stockStatus,
             variants,
+            rating,
+            reviews,
             description,
             additionalInfo,
-            status
+            status,
         } = req.body;
 
         if (!req.user.role) {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
-        const images = req.files ? req.files.map(file => file.buffer.toString("base64")) : null;
+
+        // let imageUrls = [];
+
+        // if (req.files && req.files.length > 0) {
+        //     for (const file of req.files) {
+        //         const result = await cloudinary.uploader.upload_stream(
+        //             { folder: "products" },
+        //             (err, cloudRes) => {
+        //                 if (err) throw err;
+        //                 imageUrls.push(cloudRes.secure_url);
+        //             }
+        //         );
+        //         result.end(file.buffer);
+        //     }
+        // }
+
+        let images = req.files?req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`):null;
 
         const newProduct = productModel({
-            name: name,
-            slug: slug,
-            sku: sku,
-            category: category,
-            collection: collection,
-            tags: tags,
-            attributes: attributes,
-            price: price,
-            stockStatus: stockStatus,
-            variants: variants,
-            description: description,
-            additionalInfo: additionalInfo,
-            status: status,
+            name,
+            slug,
+            sku,
+            category,
+            productCollection,
+            tags,
+            brand,
+            attributes,
+            price,
+            stockStatus,
+            variants,
+            rating,
+            reviews,
+            description,
+            additionalInfo,
+            status,
             productImage: images
         });
+
 
         await newProduct.save();
 
@@ -234,5 +258,58 @@ const restoreProduct = async (req, res) => {
     }
 };
 
+// const imageUpload = async (req, res) => {
+//   try {
+//     const { _id } = req.query;
 
-export { uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct };
+//     if (!req.files || req.files.length === 0)
+//       return res.status(400).json(new ApiError(400, "No files uploaded"));
+
+//     let urls = [];
+
+//     for (const file of req.files) {
+//       const upload = await new Promise((resolve, reject) => {
+//         const stream = cloudinary.uploader.upload_stream(
+//           { folder: "products" },
+//           (err, result) => {
+//             if (err) reject(err);
+//             else resolve(result.secure_url);
+//           }
+//         );
+//         stream.end(file.buffer);
+//       });
+//       urls.push(upload);
+//     }
+
+//     let product = await productModel.findByIdAndUpdate(
+//       _id,
+//       { $set: { productImage: urls } },
+//       { new: true }
+//     );
+
+//     return res.status(200).json(
+//       new ApiResponse(200, product, "Image Updated Successfully")
+//     );
+//   } catch (err) {
+//     return res.status(500).json(new ApiError(500, err.message));
+//   }
+// };
+
+const imageUpload = async (req,res) => {
+    try{
+        const {_id} = req.query
+        let images = req.files?req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`):null;
+
+        await productModel.findByIdAndUpdate(_id,
+            {productImage: images}
+        )
+
+        return res.status(200).json(new ApiResponse(200));
+    }
+    catch(err){
+return res.status(500).json(new ApiError(500, err.message));
+    }
+}
+
+
+export { uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct, imageUpload };

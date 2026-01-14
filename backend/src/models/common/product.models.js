@@ -3,9 +3,9 @@ import mongoose, { Schema } from "mongoose";
 const { ObjectId } = mongoose.Schema.Types;
 
 const product_Schema = new Schema({
-    productImage: {
-        type: [String]
-    },
+    productImage: [{
+        type: String
+    }],
     name: {
         type: String,
         required: true,
@@ -36,7 +36,7 @@ const product_Schema = new Schema({
         gemstone: String,
         color: String,
         material: String,
-        weight: Number,
+        weight: [Number],
         brand: String
     },
     price: {

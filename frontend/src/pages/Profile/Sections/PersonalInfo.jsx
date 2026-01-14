@@ -43,7 +43,6 @@ const PersonalInfo = () => {
       formData.append("contact", contact);
       formData.append("gender", gender);
 
-      console.log(gender)
 
       if (selectedImageFile) {
         formData.append("profileImage", selectedImageFile);
