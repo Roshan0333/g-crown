@@ -66,7 +66,7 @@ const AdminSignIn = () => {
         return
       } else {
         // localStorage.setItem("role", "admin");
-        navigate("/admin");
+        navigate("/admin/dashboard");
         console.log(apiResponse.data.message)
       }
     } catch (error) {

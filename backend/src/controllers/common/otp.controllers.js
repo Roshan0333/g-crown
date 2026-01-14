@@ -11,8 +11,8 @@ const otp = async (req, res) => {
         const transport = nodemailer.createTransport({
             service: "gmail",
             auth:{
-                 user: "g",
-                pass: ""
+                 user: "logine786@gmail.com",
+                pass: "zowb rits hjsn udyz"
             }
         });
 
