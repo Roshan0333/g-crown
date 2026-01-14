@@ -253,7 +253,7 @@ const SignIn = () => {
                   <GoogleIcon /> Sign In With Google
                 </motion.button>
 
-                <motion.button whileTap={{ scale: 0.98 }} onClick={() => navigate("/admin-login")} type="button" className="w-full border border-[#1E3A2F] py-3.5 text-[14px] font-bold text-[#1E3A2F] hover:bg-[#1E3A2F] hover:text-white transition-all mt-2">
+                <motion.button whileTap={{ scale: 0.98 }} onClick={() => navigate("/admin/login")} type="button" className="w-full border border-[#1E3A2F] py-3.5 text-[14px] font-bold text-[#1E3A2F] hover:bg-[#1E3A2F] hover:text-white transition-all mt-2">
                   ADMIN SIGN IN
                 </motion.button>
 

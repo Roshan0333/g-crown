@@ -113,7 +113,7 @@ const UpdateProfile = async (req, res) => {
 
         const updateData = {};
 
-        let image = req.file ? req.file.buffer.toString("base64"):null;
+        let image = req.file ? `data:${file.mimetype};base64,${file.buffer.toString("base64")}`:null;
 
         if (req.file) updateData.profileImage = image;
         if (contact) updateData.contact = parseInt(contact);

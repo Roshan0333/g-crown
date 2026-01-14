@@ -17,8 +17,6 @@ const PersonalInfo = () => {
   const [contact, setContact] = useState();
   const [selectedImageFile, setSelectedImageFile] = useState(null);
 
-  let role = localStorage.getItem("role");
-
   const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -49,7 +47,7 @@ const PersonalInfo = () => {
       }
 
       const apiResponse = await axiosPutService(
-        (role) ? "/admin/auth/profile" : "/customer/auth/profile",
+      "/customer/auth/profile",
         formData
       );
 
@@ -83,7 +81,7 @@ const PersonalInfo = () => {
   useEffect(() => {
     ; (
       async () => {
-        let apiResponse = await axiosGetService((role) ? "/admin/auth/myprofile" : "/customer/auth/myProfile");
+        let apiResponse = await axiosGetService("/customer/auth/myProfile");
 
         if (!apiResponse.ok) {
           alert(apiResponse.data.mesage || "No Personal Information Available");
