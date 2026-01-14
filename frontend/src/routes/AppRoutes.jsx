@@ -50,7 +50,7 @@ import AdminProfile from "../pages/admin/AdminProfile";
 export default function AppRoutes() {
   const location = useLocation();
 
-  // Hide Navbar + Footer only on auth pages
+  // Hide Navbar + Footer only on auth 
   const hideLayout =
     location.pathname === "/signin" ||
     location.pathname === "/signup" ||

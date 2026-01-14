@@ -74,8 +74,11 @@ export const FavoritesProvider = ({ children }) => {
 
   const [favorites, setFavorites] = useState(() => {
     const saved = localStorage.getItem("g-crown-favorites");
-    return saved ? JSON.parse(saved) : [];
+    if (!saved) return [];
+    const ids = JSON.parse(saved);
+    return ids.map(id => ({ _id: id })); // ensure objects!
   });
+
 
   // Sync to LocalStorage
   useEffect(() => {

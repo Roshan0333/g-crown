@@ -14,13 +14,11 @@ const Signup = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Incorrect Security Key."))
         }
 
-        const splitName = name.split(" ");
 
         const adminDetail = auth_Model({
             email: email,
             password: await encryptPasswordMethod(password),
-            firstName: splitName[0],
-            lastName: splitName[1] || ""
+            name: name
         });
 
         await adminDetail.save();
@@ -135,7 +133,7 @@ const changePassword = async (req, res) => {
 
 const UpdateProfile = async (req, res) => {
     try {
-        let {firstName, lastName, contact, gender } = req.body;
+        let {name, contact, gender } = req.body;
         const { _id, role } = req.user;
 
         if(!role){
@@ -149,9 +147,7 @@ const UpdateProfile = async (req, res) => {
         if (req.file) updateData.profileImage = image;
         if (contact) updateData.contact = contact;
         if (gender) updateData.gender = gender;
-        if(firstName) updateData.firstName = firstName;
-        if(lastName) updateData.lastName = lastName;
-        if(!lastName) updateData.lastName = "";
+        if(name) updateData.name = name;
 
 
         if (Object.keys(updateData).length === 0) {
