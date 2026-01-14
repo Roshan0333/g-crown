@@ -18,7 +18,8 @@ const Signup = async (req, res) => {
         const adminDetail = auth_Model({
             email: email,
             password: await encryptPasswordMethod(password),
-            name: name
+            name: name,
+            profileImage:null,
         });
 
         await adminDetail.save();

@@ -47,6 +47,7 @@ import AdminPrivateRoute from "./AdminPrivateRoute";
 import Showrooms from "../pages/admin/Showrooms";
 import AdminProfile from "../pages/admin/AdminProfile";
 import AdminSignUp from "../pages/auth/AdminSignup";
+import AdminSignIn from "../pages/auth/AdminLogin";
 
 export default function AppRoutes() {
   const location = useLocation();
@@ -68,6 +69,7 @@ export default function AppRoutes() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/coming-soon" element={<ComingSoon />} />
+        <Route path="/admin/login" element={<AdminLogin/>}/>
         <Route path="/admin/signup" element={<AdminSignUp/>}/>
 
         <Route path="/collections" element={<Collections />} />
