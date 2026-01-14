@@ -67,6 +67,7 @@ const AdminSignIn = () => {
       } else {
         // localStorage.setItem("role", "admin");
         navigate("/admin/dashboard");
+        localStorage.setItem("adminToken", apiResponse.data.token);
         console.log(apiResponse.data.message)
       }
     } catch (error) {
@@ -301,7 +302,7 @@ const AdminSignIn = () => {
           <footer className="mt-20 border-t border-gray-100 pt-8 text-center">
             {step === "login" && (
               <div className="mb-6">
-                <button onClick={() => navigate("/admin-signup")} className="text-[13px] font-bold uppercase tracking-widest hover:text-[#CBA135]">
+                <button onClick={() => navigate("/admin/signup")} className="text-[13px] font-bold uppercase tracking-widest hover:text-[#CBA135]">
                   Request Administrative Access
                 </button>
               </div>

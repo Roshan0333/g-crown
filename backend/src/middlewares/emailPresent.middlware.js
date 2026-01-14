@@ -25,6 +25,9 @@ const adminEmail = async (req, res, next) => {
     try{
         const {email} = req.body;
 
+        console.log(email);
+        
+
         const isEmail = await adminModel.findOne({email: email});
 
         if(isEmail){

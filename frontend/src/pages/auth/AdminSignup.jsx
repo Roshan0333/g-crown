@@ -67,10 +67,15 @@ const AdminSignUp = () => {
     if(!validatePassword()) return
 
     setIsLoading(true);
+    const email = formData.email
+    console.log(formData);
+    
 
-    const apiResponse = await axiosPostService("/admin/auth/signupOtp", formData);
+    const apiResponse = await axiosPostService("/admin/auth/signupOtp", {email});
 
     if (!apiResponse.ok) {
+      console.log(apiResponse);
+      
       alert(apiResponse.data.message || "Signup Failed");
       setIsLoading(false)
       return
