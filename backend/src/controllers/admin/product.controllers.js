@@ -13,10 +13,7 @@ const uploadNewProduct = async (req, res) => {
             productCollection,
             tags,
             brand,
-            attributes,
-            price,
             stockStatus,
-            variants,
             rating,
             reviews,
             description,
@@ -28,23 +25,29 @@ const uploadNewProduct = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
+        // const uploadToCloudinary = (file) => {
+        //     return new Promise((resolve, reject) => {
+        //         cloudinary.uploader.upload_stream(
+        //             { folder: "products" },
+        //             (err, result) => {
+        //                 if (err) return reject(err);
+        //                 resolve(result.secure_url);
+        //             }
+        //         ).end(file.buffer);
+        //     });
+        // };
 
         // let imageUrls = [];
-
-        // if (req.files && req.files.length > 0) {
-        //     for (const file of req.files) {
-        //         const result = await cloudinary.uploader.upload_stream(
-        //             { folder: "products" },
-        //             (err, cloudRes) => {
-        //                 if (err) throw err;
-        //                 imageUrls.push(cloudRes.secure_url);
-        //             }
-        //         );
-        //         result.end(file.buffer);
-        //     }
+        // if (req.files?.length) {
+        //     imageUrls = await Promise.all(req.files.map(uploadToCloudinary));
         // }
 
-        let images = req.files?req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`):null;
+
+        let imageUrls = req.files?req.files.map(file => `data:image/jpeg;base64,${file.buffer.toString("base64")}`):null;
+
+        const price = req.body.price ? JSON.parse(req.body.price) : null;
+        const attributes = req.body.attributes ? JSON.parse(req.body.attributes) : null;
+        const variants = req.body.variants ? JSON.parse(req.body.variants) : [];
 
         const newProduct = productModel({
             name,
@@ -63,7 +66,7 @@ const uploadNewProduct = async (req, res) => {
             description,
             additionalInfo,
             status,
-            productImage: images
+            productImage: imageUrls
         });
 
 
@@ -295,19 +298,19 @@ const restoreProduct = async (req, res) => {
 //   }
 // };
 
-const imageUpload = async (req,res) => {
-    try{
-        const {_id} = req.query
-        let images = req.files?req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`):null;
+const imageUpload = async (req, res) => {
+    try {
+        const { _id } = req.query
+        let images = req.files ? req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`) : null;
 
         await productModel.findByIdAndUpdate(_id,
-            {productImage: images}
+            { productImage: images }
         )
 
         return res.status(200).json(new ApiResponse(200));
     }
-    catch(err){
-return res.status(500).json(new ApiError(500, err.message));
+    catch (err) {
+        return res.status(500).json(new ApiError(500, err.message));
     }
 }
 

@@ -32,7 +32,7 @@ const product_Schema = new Schema({
         type: String,
     },
     attributes: {
-        purity: String,
+        purity: [String],
         gemstone: String,
         color: String,
         material: String,
@@ -91,6 +91,7 @@ const product_Schema = new Schema({
     additionalInfo: String,
     status: {
         type: Boolean,
+        default: true
     },
     deleted: {
         type: Boolean,

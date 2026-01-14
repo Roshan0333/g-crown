@@ -159,11 +159,11 @@ const ProductDetails = () => {
             <div className="space-y-3">
               <p className="font-semibold text-sm uppercase tracking-wider">Purity</p>
               <div className="flex gap-3">
-                {product.attributes.purity.map((purity, index) => (
-                  <button
-                    key={purity}
+                {product.variants.map((item, index) => {
+                  return <button
+                    key={index}
                     onClick={() => {
-                      setSelectedPurity(purity);
+                      setSelectedPurity(item.purity);
                       setSelectPurity(index)
                     }}
                     className={`px-4 py-2 border text-sm transition-all ${index === selectPurity
@@ -171,9 +171,10 @@ const ProductDetails = () => {
                       : "border-gray-300 hover:border-[#1C3A2C]"
                       }`}
                   >
-                    {purity}
+                    {item.purity}
                   </button>
-                ))}
+                })}
+
               </div>
             </div>
 
@@ -287,11 +288,11 @@ const ProductDetails = () => {
                     </tr>
                     <tr className="bg-white">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Purity</td>
-                      <td className="p-4 px-6 text-gray-600">{product.attributes.purity.map((item) => { return <span>{item} </span> })}</td>
+                      <td className="p-4 px-6 text-gray-600">{product.variants.map((item) => { return <span>{item.purity} </span> })}</td>
                     </tr>
                     <tr className="bg-[#F9F4E8]">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Weight</td>
-                      <td className="py-4 px-6 text-gray-600">{product.attributes.weight.map((item) => { return <span>{item} </span> })}</td>
+                      <td className="py-4 px-6 text-gray-600">{product.variants.map(item => { return <span>{item.weight} </span> })}</td>
                     </tr>
                     <tr className="bg-white">
                       <td className="py-4 px-6 font-bold border-r border-gray-50">Brand</td>

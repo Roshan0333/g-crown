@@ -23,6 +23,7 @@ const Collections = () => {
 
       if (Array.isArray(productsArray)) {
         setAllProducts(productsArray);
+        console.log(productsArray)
       } else {
         console.warn("Unexpected backend format:", productsArray);
         setAllProducts([]);
