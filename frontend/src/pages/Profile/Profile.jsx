@@ -31,6 +31,7 @@ const Profile = () => {
     }
     else {
       localStorage.clear();
+      localStorage.removeItem("g-crown-favorites");
       navigate("/signin");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }

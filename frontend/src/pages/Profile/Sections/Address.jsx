@@ -5,10 +5,6 @@ import { X, Edit3, Trash2, MapPin, Loader2, Plus } from "lucide-react";
 
 
 const Address = () => {
- 
-
-
-
 
   // Modal & Loading States
   const [isModalOpen, setIsModalOpen] = useState(false);

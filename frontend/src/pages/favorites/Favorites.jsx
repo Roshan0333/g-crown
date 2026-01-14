@@ -11,7 +11,7 @@ import supportIcon from "../../assets/NewArrivalAssets/logos/streamline-plump_cu
 
 export default function Favorites() {
   const navigate = useNavigate();
-  const { favorites, removeFromFavorites, clearFavorites, fetchWishlist  } = useFavorites();
+  const { favorites, removeFromFavorites, clearFavorites, fetchWishlist } = useFavorites();
   const { addToCart } = useCart();
   const { showToast } = useToast();
   const itemRefs = useRef({});
@@ -44,9 +44,9 @@ export default function Favorites() {
     showToast("Wishlist cleared");
   };
 
- useEffect(() => {
-  fetchWishlist();
-}, []);
+  useEffect(() => {
+    fetchWishlist();
+  }, []);
 
 
   /* =======================
@@ -160,8 +160,8 @@ export default function Favorites() {
                 <div className="w-20 h-24 overflow-hidden bg-gray-100">
                   <img
                     src={
-                      product.productImage?.length > 0
-                        ? `data:image/jpeg;base64,${product.productImage[0]}`
+                      (product.productImage && product.productImage.length > 0)
+                        ? product.productImage[0]
                         : "/fallback.jpg" // or placeholder
                     }
                     alt={product.name}

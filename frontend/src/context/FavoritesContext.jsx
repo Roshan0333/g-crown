@@ -79,7 +79,11 @@ export const FavoritesProvider = ({ children }) => {
 
   // Sync to LocalStorage
   useEffect(() => {
-    localStorage.setItem("g-crown-favorites", JSON.stringify(favorites));
+    localStorage.setItem(
+      "g-crown-favorites",
+      JSON.stringify(favorites.map(f => f._id))
+    );
+
   }, [favorites]);
 
   // Fetch Wishlist Once From Backend
@@ -95,12 +99,22 @@ export const FavoritesProvider = ({ children }) => {
         const list = apiResponse.data.data[0]?.products || [];
 
         const formatted = list.map(p => ({
-          ...p,
-          _id: p._id || p.id   // normalize backend products
+          _id: p._id,
+          slug: p.slug,
+          name: p.name,
+          price: p.price,
+          stockStatus: p.stockStatus,
+          productImage: p.productImage,   // ⭐ important for images
+          category: p.category
         }));
 
+
         setFavorites(formatted);
-        localStorage.setItem("g-crown-favorites", JSON.stringify(formatted));
+        localStorage.setItem(
+          "g-crown-favorites",
+          JSON.stringify(formatted.map(x => x._id))
+        );
+
       }
     } catch (err) {
       console.log("Wishlist load error:", err);
