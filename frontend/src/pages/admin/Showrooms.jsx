@@ -142,7 +142,7 @@ const Showrooms = () => {
                   <div className="w-48 bg-slate-100 relative overflow-hidden flex-shrink-0 rounded-l-[2rem]">
                     {img ? (
                       <img
-                        src={`data:image/*;base64,${img}`}
+                        src={img}
                         className="h-full w-full object-cover rounded-2xl"
                       />
                     ) : (

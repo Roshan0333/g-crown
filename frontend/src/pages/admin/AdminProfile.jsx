@@ -35,7 +35,7 @@ const AdminProfile = () => {
     setFormData(prev => ({
       ...prev,
       ...admin,
-      profilePreview: admin?.profileImage ? `data:image/*;base64,${admin.profileImage}` : ""
+      profilePreview: admin?.profileImage ?admin.profileImage : ""
     }));
   }, [admin]);
 

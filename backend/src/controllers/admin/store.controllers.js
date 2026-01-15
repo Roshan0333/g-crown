@@ -1,6 +1,7 @@
 import Showroom from "../../models/common/store.model.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
+import {cloudinary, deleteFromCloudinary} from "../../configs/cloudinary.js";
 
 const addShowroom = async (req, res) => {
     try {
@@ -13,7 +14,27 @@ const addShowroom = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
-        const image = req.files ? req.files.map(file => file.buffer.toString("base64")) : [];
+        // const image = req.files ? req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`) : [];
+
+        let image = [];
+
+        for (const file of req.files) {
+            const upload = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: "store" },
+                    (err, result) => {
+                        if (err) reject(err);
+                        else resolve({
+                            url: result.secure_url,
+                            public_id: result.public_id
+                        });
+                    }
+                );
+                stream.end(file.buffer);
+            });
+
+            image.push(upload.url); // <-- IMPORTANT CHANGE
+        }
 
         const showroom = Showroom(
             {
@@ -79,6 +100,15 @@ const hardDeleteShowroom = async (req, res) => {
 
         if (!req.user.role) {
             return res.status(401).json(new ApiError(401, "Not Auth"));
+        }
+
+        let store = Showroom.findById(id);
+
+        // ---- DELETE CLOUDINARY IMAGES ---- //
+        if (store.seeDesignsImages?.length) {
+            await Promise.all(
+                store.seeDesignsImages.map(imgUrl => deleteFromCloudinary(imgUrl))
+            );
         }
 
         await Showroom.findByIdAndDelete(id);
