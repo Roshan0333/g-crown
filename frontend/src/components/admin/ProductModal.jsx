@@ -1,7 +1,7 @@
 // src/components/admin/ProductModal.jsx
 import React, { useState, useEffect } from "react";
 import { X, Trash2, Plus } from "lucide-react";
-import { axiosPostService } from "../../services/axios";
+import { axiosPostService, axiosPutService } from "../../services/axios";
 
 const ProductModal = ({ product, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -10,7 +10,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
     productCollection: "",
     brand: "",
     sku: "",
-    shortDescription: "",
+    additionalInfo: "",
     description: "",
     price: { mrp: "", sale: "" },
     stockStatus: "In Stock",
@@ -137,6 +137,35 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
       sale: Number(v.sale),
     }));
 
+
+    if (product) {
+      // Update Price
+      const apiPriceResponse = await axiosPutService("/admin/product/price", {
+        productId: product._id,
+        mrp: Number(formData?.price?.mrp),
+        sale: Number(formData?.price?.sale),
+      });
+
+      if(!apiPriceResponse.ok){
+        alert(apiPriceResponse.data.message || "Price not update.")
+        return
+      }
+
+      // Update Quantity
+      const apiQuantityResponse = await axiosPutService("/admin/product/quantity", {
+        productId: product._id,
+        variants: cleanedVariants,
+      });
+
+      if(!apiPriceResponse.ok){
+        alert(apiPriceResponse.data.message || "Quantity not update.")
+        return
+      }
+
+      onSuccess();
+      return;
+    }
+
     const fd = new FormData();
     fd.append("name", formData.name);
     fd.append("category", formData.category);
@@ -144,6 +173,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
     fd.append("brand", formData.brand);
     fd.append("sku", formData.sku);
     fd.append("description", formData.description);
+    fd.append("additionalInfo", formData.additionalInfo)
     fd.append("stockStatus", formData.stockStatus);
     fd.append("price", JSON.stringify(formData.price));
     fd.append("attributes", JSON.stringify(formData.attributes));
@@ -155,8 +185,6 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
     formData.productImage.forEach(file => {
       fd.append("productImage", file);
     });
-
-    for (let x of fd.entries()) console.log(x);
 
 
     const apiResponse = await axiosPostService(
@@ -439,7 +467,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
               </label>
               <input
                 type="text"
-                name="shortDescription"
+                name="additionalInfo"
                 value={formData.additionalInfo}
                 onChange={handleChange}
                 placeholder="Short summary of the product"

@@ -190,6 +190,47 @@ const myProfile = async (req, res) => {
     }
 }
 
+const getAllUsers = async (req, res) => {
+    try{
+        if(!req.user.role){
+            return res.status(401).json(new ApiError("Not Auth"));
+        }
+
+        let userData = await auth_Model.find({});
+
+        if(userData.length === 0){
+            return res.status(404).json(new ApiError(404, "No Employee"));
+        }
+
+        return res.status(200).json(new ApiResponse(200, userData, "Successfull"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]))
+    }
+}
+
+
+const deleteUser = async (req, res) => {
+    try{
+        const {userId} = req.query;
+
+        if(!req.user.role){
+            return res.status(401).json(new ApiError("Not Auth"));
+        }
+
+        let userData = await auth_Model.findByIdAndDelete(userId);
+
+        if(!userData){
+            return res.status(404).json(new ApiError(404, "Employee Not find."))
+        }
+
+        return res.status(200).json(new ApiResponse(200, null, "Employee Delete Successfull"));
+    }
+    catch{
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]))
+    }
+}
+
 const Signout = async (req, res) => {
     try {
         res.clearCookie("AccessToken");
@@ -202,4 +243,4 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, changePassword,  Signout, UpdateProfile, myProfile };
+export { Signup, Login, ForgotPassword, changePassword,  Signout, UpdateProfile, myProfile, getAllUsers, deleteUser };

@@ -1,7 +1,7 @@
 import {Router} from "express";
 import multer from "multer";
 import otp from "../../controllers/common/otp.controllers.js";
-import {Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile} from "../../controllers/admin/auth.controllers.js";
+import {Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile, getAllUsers, deleteUser} from "../../controllers/admin/auth.controllers.js";
 import duplicateEmail from "../../middlewares/duplicationEmail.middlware.js";
 import {adminEmail} from "../../middlewares/emailPresent.middlware.js";
 import isAuth from "../../middlewares/requiredLogin.middleware.js";
@@ -20,5 +20,8 @@ router.route("/changepassword").put(isAuth, changePassword)
 router.route("/signout").post(Signout);
 router.route("/profile").put(isAuth, upload.single("profileImage"), UpdateProfile)
 router.route('/myprofile').get(isAuth, myProfile);
+
+router.route("/getemployee").get(isAuth, getAllUsers);
+router.route("/deleteemployee").delete(isAuth, deleteUser)
 
 export default router;

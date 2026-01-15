@@ -65,15 +65,11 @@ export const axiosGetService = async (path) => {
     }
 }
 
-export const axiosProductPostService = async (path, client) => {
+export const axiosDeleteService = async (path) => {
     try {
-        let response = await axios.post(
+        let response = await axios.delete(
             `${API_URL}${path}`,
-            client,
             {
-                headers: {
-                    "Content-Type": "application/json"
-                },
                 withCredentials: true
             }
         );
