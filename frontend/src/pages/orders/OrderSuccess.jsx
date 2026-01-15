@@ -21,7 +21,7 @@ export default function OrderSuccess() {
 const [order, setOrder] = useState(null);
 
 useEffect(() => {
-  axios.get("http://localhost:3000/api/orders")
+  axios.get("http://localhost:3000/api/orders",{withCredentials: true})
     .then(res => {
       if (res.data.length > 0) {
         setOrder(res.data[res.data.length - 1]); // ✅ latest

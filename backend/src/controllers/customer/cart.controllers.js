@@ -76,12 +76,9 @@ const updateItemQuantity = async (req, res) => {
     return res.status(200).json({ success: true, message: "Updated", data: userCart });
 
   } catch (err) {
-    console.log("UPDATE ERROR:", err);
     return res.status(500).json({ message: err.message });
   }
 };
-
-
 
 const clearCart = async (req, res) => {
     try {
@@ -128,7 +125,6 @@ const removeItem = async (req, res) => {
         );
     }
 };
-
 
 const getItems = async (req, res) => {
   try {
@@ -181,10 +177,8 @@ const getItems = async (req, res) => {
     );
 
   } catch (err) {
-    console.error("Aggregation Error:", err);
     res.status(500).json(new ApiError(500, err.message));
   }
 };
-
 
 export { addItem, updateItemQuantity, clearCart, removeItem, getItems };

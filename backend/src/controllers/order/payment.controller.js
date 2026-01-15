@@ -2,6 +2,8 @@
 import crypto from "crypto";
 import razorpay from "../../configs/razorpay.js";
 import Order from "../../models/order/Order.js";
+import productModel from "../../models/common/product.models.js";
+import cart from "../../models/customer/cart.model.js"
 
 export const createOrder = async (req, res) => {
   try {
@@ -15,12 +17,94 @@ export const createOrder = async (req, res) => {
 
     res.json(order);
   } catch (err) {
-        
+
 
     res.status(500).json({ error: err.message });
   }
 };
 
+
+
+// export const verifyPayment = async (req, res) => {
+//   try {
+//     const {
+//       razorpay_order_id,
+//       razorpay_payment_id,
+//       razorpay_signature,
+//       cartItems,
+//       totalAmount,
+//       address,
+//       subtotal,
+//   gst,
+//   shipping,
+//   productImage
+//     } = req.body;
+
+//     const body = razorpay_order_id + "|" + razorpay_payment_id;
+//     const invoiceNo = "INV-GC-" + Date.now();   // Example: INV-GC-17000001234
+
+//     const expectedSignature = crypto
+//       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+//       .update(body)
+//       .digest("hex");
+
+//     if (expectedSignature !== razorpay_signature) {
+//       return res.status(400).json({ success: false });
+//     }
+//     // 🔴 Custom Order ID generate
+// const generateOrderId = () => {
+//   const year = new Date().getFullYear();        // 2026
+//   const day = String(new Date().getDate()).padStart(2, "0"); 
+//   const month = String(new Date().getMonth() + 1).padStart(2, "0");
+//   const random = Math.floor(1000 + Math.random() * 9000); // 4 digit number
+
+//   return `#GC-${year}-${day}${month}-${random}`;
+// };
+
+// const customOrderId = generateOrderId();
+
+
+//     const orderData = {
+//       userId: req.user._id,
+//       userName: address.fullName,
+//       userMobile: address.mobile,
+//       displayOrderId: customOrderId,          // 🔴 User ला दिसणारा
+//       razorpayOrderId: razorpay_order_id,
+//       invoiceNo: invoiceNo,
+//       total: totalAmount,
+//       method: "Razorpay",
+//       date: new Date(),
+//       address: address,
+//   subtotal: subtotal,   // ✔
+//   gst: gst,             // ✔
+//   shipping: shipping,   // ✔
+
+//       orderStatus: "Confirmed",
+
+//       statusText: "Your order is placed",
+//       products: cartItems.map(item => ({
+//         productId: item.productId,
+//         name: item.name,
+//         detail: item.description,
+//         productImage: item.productImage,
+//         qty: item.quantity,   // <-- fix
+//         price: item.price,
+//         carat: item.carat
+//       }))
+//     };
+
+
+//     // फक्त हाच एक ठेवा
+//     const newOrder = new Order(orderData);
+//     await newOrder.save();  
+
+//     res.status(200).json({ success: true });
+
+//   } catch (error) {
+
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 
 
 export const verifyPayment = async (req, res) => {
@@ -33,13 +117,12 @@ export const verifyPayment = async (req, res) => {
       totalAmount,
       address,
       subtotal,
-  gst,
-  shipping,
-  productImage
+      gst,
+      shipping,
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const invoiceNo = "INV-GC-" + Date.now();   // Example: INV-GC-17000001234
+    const invoiceNo = "INV-GC-" + Date.now();
 
     const expectedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -49,56 +132,83 @@ export const verifyPayment = async (req, res) => {
     if (expectedSignature !== razorpay_signature) {
       return res.status(400).json({ success: false });
     }
-    // 🔴 Custom Order ID generate
-const generateOrderId = () => {
-  const year = new Date().getFullYear();        // 2026
-  const day = String(new Date().getDate()).padStart(2, "0"); 
-  const month = String(new Date().getMonth() + 1).padStart(2, "0");
-  const random = Math.floor(1000 + Math.random() * 9000); // 4 digit number
 
-  return `#GC-${year}-${day}${month}-${random}`;
-};
+    // Custom Order ID
+    const generateOrderId = () => {
+      const year = new Date().getFullYear();
+      const day = String(new Date().getDate()).padStart(2, "0");
+      const month = String(new Date().getMonth() + 1).padStart(2, "0");
+      const random = Math.floor(1000 + Math.random() * 9000);
+      return `#GC-${year}-${day}${month}-${random}`;
+    };
 
-const customOrderId = generateOrderId();
-
+    const customOrderId = generateOrderId();
 
     const orderData = {
       userId: req.user._id,
       userName: address.fullName,
       userMobile: address.mobile,
-      displayOrderId: customOrderId,          // 🔴 User ला दिसणारा
+      displayOrderId: customOrderId,
       razorpayOrderId: razorpay_order_id,
       invoiceNo: invoiceNo,
       total: totalAmount,
       method: "Razorpay",
       date: new Date(),
-      address: address,
-  subtotal: subtotal,   // ✔
-  gst: gst,             // ✔
-  shipping: shipping,   // ✔
-  
+      address,
+      subtotal,
+      gst,
+      shipping,
       orderStatus: "Confirmed",
-     
       statusText: "Your order is placed",
       products: cartItems.map(item => ({
         productId: item.productId,
         name: item.name,
         detail: item.description,
         productImage: item.productImage,
-        qty: item.quantity,   // <-- fix
+        qty: item.quantity,
         price: item.price,
-        carat: item.carat
+        carat: item.carat   // <-- used to match purity
       }))
     };
 
-    // फक्त हाच एक ठेवा
     const newOrder = new Order(orderData);
-    await newOrder.save();  
+    await newOrder.save();
 
-    res.status(200).json({ success: true });
+    // ===============================
+    // 🔴 Reduce Inventory by Carat/Purity
+    // ===============================
+
+    for (const item of cartItems) {
+      const product = await productModel.findById(item.productId);
+
+      if (!product) continue;
+
+      const selectedPurity = item.carat;
+      const quantityToReduce = item.quantity;
+
+      const variantIndex = product.variants.findIndex(
+        v => v.purity.toLowerCase() === selectedPurity.toLowerCase()
+      );
+
+      if (variantIndex !== 0) {
+        const newQty = Math.max(
+          0,
+          product.variants[variantIndex].quantity - quantityToReduce
+        );
+
+        product.variants[variantIndex].quantity = newQty;
+      }
+
+      // Optionally, update stockStatus
+      const isOut = product.variants.every(v => v.quantity <= 0);
+      if (isOut) product.stockStatus = "Out of Stock";
+
+      await product.save();
+    }
+
+    res.status(200).json({ success: true, message: "Payment verified & stock updated." });
 
   } catch (error) {
-    
     res.status(500).json({ error: error.message });
   }
 };
