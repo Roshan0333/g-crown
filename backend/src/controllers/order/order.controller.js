@@ -1,4 +1,5 @@
-import Order from "../../models/order/Order.js";
+
+  import Order from "../../models/order/Order.js";
 import pdf from "html-pdf";
 import fs from "fs";
 import path from "path";
@@ -21,7 +22,7 @@ export const getOrders = async (req, res) => {
 //   res.json({ message: "Order Created Successfully" });
 // };
 export const createOrder = async (req, res) => {
-  const displayOrderId = "GC-" + Date.now();   // 🔴 same ID everywhere
+     // 🔴 same ID everywhere
 
   const newOrder = new Order({
     ...req.body,
@@ -36,9 +37,9 @@ export const createOrder = async (req, res) => {
 // Update Status
 export const updateOrderStatus = async (req, res) => {
   await Order.findByIdAndUpdate(req.params.id, {
-    status: req.body.status,
-    statusText: req.body.statusText
-  });
+  orderStatus: req.body.status,
+  statusText: req.body.statusText
+});
   res.json({ message: "Order Status Updated" });
 };
 
@@ -52,12 +53,13 @@ export const generateInvoice = async (req, res) => {
     let html = fs.readFileSync(templatePath, "utf8");
 
     const shippingName = order.address
-  ? order.address.firstName + " " + order.address.lastName
+  ? order.address.fullName
   : "Customer";
 
 const shippingAddress = order.address
-  ? `${order.address.address}, ${order.address.city}, ${order.address.state} - ${order.address.zip}, Ph: ${order.address.phone}`
+  ? `${order.address.addressLine}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}, Ph: ${order.address.mobile}`
   : "Not Available";
+
 
     let rows = "";
     order.products.forEach((p) => {
@@ -123,7 +125,7 @@ export const saveOrder = async (req, res) => {
     const order = new Order({
       ...req.body,
       displayOrderId: displayOrderId,
-      status: "Accepted"
+      orderStatus: "Accepted"
     });
 
     await order.save();
@@ -138,11 +140,13 @@ export const saveOrder = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   try {
     await Order.findByIdAndUpdate(req.params.id, {
-      status: "Cancelled",
+      orderStatus: "Cancelled",   // ✅ योग्य field
       statusText: "Your order has been cancelled by user"
     });
+
     res.json({ success: true, message: "Order Cancelled" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+  

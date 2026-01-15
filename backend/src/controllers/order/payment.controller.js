@@ -1,3 +1,4 @@
+
 import crypto from "crypto";
 import razorpay from "../../configs/razorpay.js";
 import Order from "../../models/order/Order.js";
@@ -14,7 +15,7 @@ export const createOrder = async (req, res) => {
 
     res.json(order);
   } catch (err) {
-        console.log("Razorpay Error:", err);   // 👈 हे add कर
+        
 
     res.status(500).json({ error: err.message });
   }
@@ -61,6 +62,8 @@ const customOrderId = generateOrderId();
 
 
     const orderData = {
+      userName: address.fullName,
+      userMobile: address.mobile,
       displayOrderId: customOrderId,          // 🔴 User ला दिसणारा
       razorpayOrderId: razorpay_order_id,
       invoiceNo: invoiceNo,
@@ -72,9 +75,10 @@ const customOrderId = generateOrderId();
   subtotal: subtotal,   // ✔
   gst: gst,             // ✔
   shipping: shipping,   // ✔
-  total: totalAmount,
+  
 
-      status: "Accepted",
+      orderStatus: "Confirmed",
+
       statusText: "Your order is placed",
       products: cartItems.map(item => ({
         name: item.name,
@@ -92,7 +96,7 @@ const customOrderId = generateOrderId();
     res.status(200).json({ success: true });
 
   } catch (error) {
-    console.log("VERIFY ERROR =>", error);
+    
     res.status(500).json({ error: error.message });
   }
 };

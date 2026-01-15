@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Earing from "../../../assets/NewArrivalAssets/earrings-1.png";
+import { useNavigate } from "react-router-dom";
 
 const MyOrders = () => {
   const [orderList, setOrderList] = useState([]);
@@ -12,16 +13,32 @@ const [rating, setRating] = useState(0);
 const [comment, setComment] = useState("");
 const [selectedOrderId, setSelectedOrderId] = useState(null);
 
+const navigate = useNavigate();
 
 const openInvoice = (orderId) => {
   window.open(`http://localhost:3000/api/orders/${orderId}/invoice`, "_blank");
 };
 
-  useEffect(() => {
-    axios.get("http://localhost:3000/api/orders")
-      .then(res => setOrderList(res.data))
-      .catch(err => console.log(err));
-  }, []);
+useEffect(() => {
+  const fetchOrders = async () => {
+    try {
+      const res = await axios.get("http://localhost:3000/api/orders");
+      setOrderList(res.data);
+    } catch (err) {
+      console.log("MyOrders Fetch Error:", err);
+    }
+  };
+
+  fetchOrders(); // first time load
+
+  const timer = setInterval(() => {
+    fetchOrders();   // दर 3 सेकंदाला server कडून latest status घेईल
+  }, 3000);
+
+  return () => clearInterval(timer);
+}, []);
+
+
 const submitReview = async () => {
 
   await axios.post("http://localhost:3000/api/reviews/add", {
@@ -43,18 +60,20 @@ const cancelOrder = async (id) => {
   alert("Your order has been cancelled");
 
   setOrderList(prev =>
-    prev.map(o =>
-      o._id === id
-        ? { ...o, status: "Cancelled", statusText: "Your order has been cancelled by you" }
-        : o
-    )
-  );
+  prev.map(o =>
+    o._id === id
+      ? { ...o, orderStatus: "Cancelled", statusText: "Your order has been cancelled by you" }
+      : o
+  )
+);
+
 };
 
 
     const filteredOrders = filter === "All"
     ? orderList
-    : orderList.filter(o => o.status === filter);
+    : orderList.filter(o => o.orderStatus === filter);
+
 
     
 
@@ -67,17 +86,13 @@ const cancelOrder = async (id) => {
           Orders ({orderList.length})
         </h2>
         <div className="flex items-center gap-2 text-sm w-full sm:w-auto">
-         <select
-          onChange={(e) => setFilter(e.target.value)}
-          className="border px-3 py-1"
-        >
-          <option value="All">All</option>
-          <option value="Accepted">Accepted</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
-  order
+        <select onChange={(e) => setFilter(e.target.value)} className="border px-3 py-1">
+  <option value="All">All</option>
+  <option value="Accepted">Accepted</option>
+  <option value="Delivered">Delivered</option>
+  <option value="Cancelled">Cancelled</option>
+</select>
 
-        </select>
         </div>
       </div>
 
@@ -128,21 +143,40 @@ const cancelOrder = async (id) => {
           <div className="p-4 flex justify-between items-center bg-gray-50">
             <div>
               <span className={`px-3 py-1 text-xs border ${
-                order.status === "Accepted"
+                order.orderStatus
                   ? "bg-orange-100 text-orange-600"
                   : "bg-green-100 text-green-600"
               }`}>
-                {order.status}
+                {order.orderStatus}
+
               </span>
-              <p className="text-sm italic text-gray-500 mt-1">{order.statusText}</p>
+              <p className="text-sm italic text-gray-500 mt-1">
+  {order.statusText
+    ? order.statusText
+    : order.orderStatus === "Confirmed"
+    ? "Your order is placed"
+    : order.orderStatus === "Cancelled"
+    ? "Your order has been cancelled by you"
+    : order.orderStatus === "Shipped"
+    ? "Your order is on the way"
+    : order.orderStatus === "Delivered"
+    ? "Your order has been delivered"
+    : ""}
+</p>
+
             </div>
 
             <div className="flex gap-2">
-              {order.status === "Accepted" ? (
+             {order.orderStatus === "Confirmed" ? (
+
                 <>
-                  <button className="bg-[#1B3022] text-white px-4 py-2 text-sm">
-                    Track Order
+                  <button
+                    onClick={() => navigate("/track-order", { state: { orderId: order.displayOrderId } })}
+                  className="bg-[#1B3022] text-white px-4 py-2 text-sm"
+                    >
+                  Track Order
                   </button>
+
                   <button
                   onClick={() => openInvoice(order._id)}
                   className="border px-4 py-2 text-sm"
@@ -150,23 +184,23 @@ const cancelOrder = async (id) => {
                   Invoice
                     </button>
                      <button
-  type="button"
-  onClick={() => {
-    setShowReview(true);
-       setSelectedOrderId(order._id);   // 🔴 हा line missing होता
+                type="button"
+                   onClick={() => {
+                       setShowReview(true);
+                          setSelectedOrderId(order._id);   // 🔴 हा line missing होता
 
-  }}
-  className="bg-[#1B3022] text-white px-4 py-2 text-sm"
->
-  Add Review
-</button>
+                         }}
+                       className="bg-[#1B3022] text-white px-4 py-2 text-sm"
+                  >
+                   Add Review
+                      </button>
 
                  <button
-  onClick={() => cancelOrder(order._id)}
-  className="text-red-500 text-sm"
->
-  Cancel
-</button>
+                     onClick={() => cancelOrder(order._id)}
+                   className="text-red-500 text-sm"
+                >
+               Cancel
+                        </button>
 
                 </>
               ) : (
@@ -174,16 +208,16 @@ const cancelOrder = async (id) => {
                   
                  
                    <button
-  type="button"
-  onClick={() => {
+                  type="button"
+            onClick={() => {
     setShowReview(true);
        setSelectedOrderId(order._id);   // 🔴 हा line missing होता
 
-  }}
-  className="bg-[#1B3022] text-white px-4 py-2 text-sm"
->
-  Add Review
-</button>
+      }}
+        className="bg-[#1B3022] text-white px-4 py-2 text-sm"
+        >
+     Add Review
+        </button>
 
 {showReview && (
   <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -226,16 +260,25 @@ const cancelOrder = async (id) => {
     
   </div>
 )}
-                <button className="bg-[#1B3022] text-white px-4 py-2 text-sm">
-                    Track Order
-                  </button>
+                 <button
+  onClick={() => navigate(`/track-order/${order.displayOrderId}`)}
+  className="bg-[#1B3022] text-white px-4 py-2 text-sm"
+>
+  Track Order
+</button>
+
                   <button
                   onClick={() => openInvoice(order._id)}
                   className="border px-4 py-2 text-sm"
                   >
                   Invoice
                     </button>
-                     <button className="text-red-500 text-sm">Cancel</button>
+                      <button
+                     onClick={() => cancelOrder(order._id)}
+                   className="text-red-500 text-sm"
+                >
+               Cancel
+                        </button>
 
 
                 </>

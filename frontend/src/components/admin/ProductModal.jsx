@@ -1,6 +1,7 @@
 // src/components/admin/ProductModal.jsx
 import React, { useState, useEffect } from "react";
 import { X, Trash2, Plus } from "lucide-react";
+import { axiosPostService, axiosPutService } from "../../services/axios";
 
 const ProductModal = ({ product, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -9,7 +10,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
     productCollection: "",
     brand: "",
     sku: "",
-    shortDescription: "",
+    additionalInfo: "",
     description: "",
     price: { mrp: "", sale: "" },
     stockStatus: "In Stock",
@@ -21,86 +22,183 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
       weight: "",
     },
     variants: [],
-    productImage: [],
+
+    // FIX: separate images
+    productImage: [],      // File objects only
+    existingImages: [],    // URLs only
   });
 
   const [imagePreviews, setImagePreviews] = useState([]);
 
   useEffect(() => {
     if (product) {
-      setFormData(product);
-      if (product.productImage) setImagePreviews(product.productImage);
+      setFormData(prev => ({
+        ...prev,
+        ...product,
+        existingImages: product.productImage || [],
+        productImage: []
+      }));
+      setImagePreviews(product.productImage || []);
     }
   }, [product]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name.includes("price")) {
       const key = name.split(".")[1];
-      setFormData({ ...formData, price: { ...formData.price, [key]: value } });
+      setFormData(prev => ({
+        ...prev,
+        price: { ...prev.price, [key]: value },
+      }));
     } else if (name.includes("attributes")) {
       const key = name.split(".")[1];
-      setFormData({
-        ...formData,
-        attributes: { ...formData.attributes, [key]: value },
-      });
+      setFormData(prev => ({
+        ...prev,
+        attributes: { ...prev.attributes, [key]: value },
+      }));
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handlePurityChange = (e) => {
-    setFormData({
-      ...formData,
-      attributes: { ...formData.attributes, purity: e.target.value.split(",") },
-    });
+    setFormData(prev => ({
+      ...prev,
+      attributes: { ...prev.attributes, purity: e.target.value.split(",") },
+    }));
   };
 
+  // IMAGE UPLOAD (Files only)
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData({
-      ...formData,
-      productImage: [...formData.productImage, ...files],
-    });
-    const previews = files.map((file) => URL.createObjectURL(file));
-    setImagePreviews([...imagePreviews, ...previews]);
+    const files = [...e.target.files];
+    const previews = files.map(file => URL.createObjectURL(file));
+
+    setFormData(prev => ({
+      ...prev,
+      productImage: [...prev.productImage, ...files],
+    }));
+
+    setImagePreviews(prev => [...prev, ...previews]);
   };
 
+  // REMOVE IMAGE (existing or new)
   const removeImage = (index) => {
-    const newFiles = [...formData.productImage];
-    newFiles.splice(index, 1);
-    setFormData({ ...formData, productImage: newFiles });
+    const isExisting = index < formData.existingImages.length;
 
-    const newPreviews = [...imagePreviews];
-    newPreviews.splice(index, 1);
-    setImagePreviews(newPreviews);
+    if (isExisting) {
+      setFormData(prev => ({
+        ...prev,
+        existingImages: prev.existingImages.filter((_, i) => i !== index),
+      }));
+    } else {
+      const fileIndex = index - formData.existingImages.length;
+      setFormData(prev => ({
+        ...prev,
+        productImage: prev.productImage.filter((_, i) => i !== fileIndex),
+      }));
+    }
+
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
+  // VARIANTS
   const handleVariantChange = (index, field, value) => {
-    const updatedVariants = [...formData.variants];
-    updatedVariants[index][field] = value;
-    setFormData({ ...formData, variants: updatedVariants });
+    const updated = [...formData.variants];
+    updated[index][field] = value;
+    setFormData(prev => ({ ...prev, variants: updated }));
   };
 
   const addVariant = () => {
-    setFormData({
-      ...formData,
-      variants: [
-        ...formData.variants,
-        { purity: "", weight: "", quantity: "", price: "", sale: "" },
+    setFormData(prev => ({
+      ...prev,
+      variants: [...prev.variants,
+      { purity: "", weight: "", quantity: "", price: "", sale: "" }
       ],
-    });
+    }));
   };
 
   const removeVariant = (index) => {
-    const updatedVariants = formData.variants.filter((_, i) => i !== index);
-    setFormData({ ...formData, variants: updatedVariants });
+    setFormData(prev => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
   };
 
-  const handleSubmit = (e) => {
+  // SUBMIT
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSuccess(formData);
+
+    const cleanedVariants = formData.variants.map(v => ({
+      purity: v.purity,
+      weight: Number(v.weight),
+      quantity: Number(v.quantity),
+      price: Number(v.price),
+      sale: Number(v.sale),
+    }));
+
+
+    if (product) {
+      // Update Price
+      const apiPriceResponse = await axiosPutService("/admin/product/price", {
+        productId: product._id,
+        mrp: Number(formData?.price?.mrp),
+        sale: Number(formData?.price?.sale),
+      });
+
+      if(!apiPriceResponse.ok){
+        alert(apiPriceResponse.data.message || "Price not update.")
+        return
+      }
+
+      // Update Quantity
+      const apiQuantityResponse = await axiosPutService("/admin/product/quantity", {
+        productId: product._id,
+        variants: cleanedVariants,
+      });
+
+      if(!apiPriceResponse.ok){
+        alert(apiPriceResponse.data.message || "Quantity not update.")
+        return
+      }
+
+      onSuccess();
+      return;
+    }
+
+    const fd = new FormData();
+    fd.append("name", formData.name);
+    fd.append("category", formData.category);
+    fd.append("productCollection", formData.productCollection);
+    fd.append("brand", formData.brand);
+    fd.append("sku", formData.sku);
+    fd.append("description", formData.description);
+    fd.append("additionalInfo", formData.additionalInfo)
+    fd.append("stockStatus", formData.stockStatus);
+    fd.append("price", JSON.stringify(formData.price));
+    fd.append("attributes", JSON.stringify(formData.attributes));
+    fd.append("variants", JSON.stringify(cleanedVariants));
+
+    // IMPORTANT
+    fd.append("productImage", JSON.stringify(formData.existingImages));
+
+    formData.productImage.forEach(file => {
+      fd.append("productImage", file);
+    });
+
+
+    const apiResponse = await axiosPostService(
+      "/admin/product/addProduct",
+      fd
+    );
+
+    if (apiResponse.ok) {
+      onSuccess(apiResponse.data.data);
+    } else {
+      alert(apiResponse.data.message);
+    }
   };
+
 
   return (
     <div className="fixed inset-0 bg-black/10 flex justify-center items-start pt-10 z-50 overflow-auto">
@@ -214,8 +312,8 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
                   onChange={handleChange}
                   className="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-green-300"
                 >
-                  <option>In Stock</option>
-                  <option>Out of Stock</option>
+                  <option value="In Stock">In Stock</option>
+                  <option value="Out of Stock">Out of Stock</option>
                 </select>
               </div>
             </div>
@@ -369,8 +467,8 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
               </label>
               <input
                 type="text"
-                name="shortDescription"
-                value={formData.shortDescription}
+                name="additionalInfo"
+                value={formData.additionalInfo}
                 onChange={handleChange}
                 placeholder="Short summary of the product"
                 className="border rounded px-3 py-2 focus:outline-none focus:ring focus:ring-indigo-300"

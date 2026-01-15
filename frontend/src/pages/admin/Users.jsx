@@ -11,23 +11,13 @@ import {
   UserPlus,
 } from "lucide-react";
 import Toast from "../../components/admin/Toast.jsx";
-
-const initialUsers = [
-  { id: 1, name: "John Doe", email: "john@example.com", role: "Manager" },
-  { id: 2, name: "Jane Smith", email: "jane@example.com", role: "Staff" },
-  {
-    id: 3,
-    name: "Admin User",
-    email: "admin@gcrown.com",
-    role: "Administrator",
-  },
-];
+import { axiosGetService, axiosDeleteService } from "../../services/axios.js"
 
 // Removed 'Customer' option as requested
 const roles = ["Administrator", "Manager", "Staff"];
 
 const Users = () => {
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
@@ -39,28 +29,63 @@ const Users = () => {
   const handleSave = (user) => {
     if (selectedUser) {
       setUsers(
-        users.map((u) => (u.id === selectedUser.id ? { ...u, ...user } : u))
+        users.map((u) => (u._id === selectedUser._id ? { ...u, ...user } : u))
       );
       showToast("User updated successfully!");
     } else {
-      setUsers([...users, { ...user, id: Date.now() }]);
+      setUsers([...users, { ...user, _id: Date.now() }]);
       showToast("New team member added!");
     }
     setModalOpen(false);
     setSelectedUser(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to remove this user?")) {
-      setUsers(users.filter((u) => u.id !== id));
-      showToast("User removed successfully!", "success");
+
+      const apiResponse = await axiosDeleteService(`/admin/auth/deleteemployee?userId=${id}`)
+
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "Employee Not Delete.");
+      }
+      else {
+        setUsers(users.filter((u) => u.id !== id));
+        showToast("User removed successfully!", "success");
+      }
     }
   };
 
   const handleEdit = (user) => {
     setSelectedUser(user);
     setModalOpen(true);
+  }
+
+  const fetchUsers = async () => {
+    const apiResponse = await axiosGetService("/admin/auth/getemployee");
+
+    console.log("API:", apiResponse);
+
+    // Correct logic
+    if (!apiResponse.ok) {
+      showToast(apiResponse.data.message || "Failed to load users", "error");
+      setUsers([]);
+      return;
+    }
+
+    const data = apiResponse.data.data;
+
+    if (Array.isArray(data)) {
+      setUsers(data);
+    } else {
+      setUsers([]);
+    }
   };
+
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
 
   return (
     <div className="p-2 md:p-2 bg-[#FFF8E8] min-h-screen space-y-8 animate-in fade-in duration-500">
@@ -102,57 +127,55 @@ const Users = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
-              {users.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-slate-50/50 transition-all group"
-                >
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black text-sm">
-                        {user.name.charAt(0)}
-                      </div>
-                      <span className="font-bold text-slate-800">
-                        {user.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2 text-slate-500 font-medium">
-                      <Mail size={14} /> {user.email}
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span
-                      className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight ${
-                        user.role === "Administrator"
-                          ? "bg-purple-100 text-purple-600"
-                          : user.role === "Manager"
-                          ? "bg-blue-100 text-blue-600"
-                          : "bg-slate-100 text-slate-600"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 rounded-xl shadow-sm transition-all"
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl shadow-sm transition-all"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-8 py-6 text-center text-slate-500 font-medium">
+                    No team members found
                   </td>
                 </tr>
-              ))}
+              ) : (
+                users.map((user) => (
+                  <tr key={user._id} className="hover:bg-slate-50/50 transition-all group">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-black text-sm">
+                          {user?.name?.charAt(0)?.toUpperCase()}
+                        </div>
+                        <span className="font-bold text-slate-800">
+                          {user?.name}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-2 text-slate-500 font-medium">
+                        <Mail size={14} /> {user?.email}
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      {/* KEEP UI exactly as original */}
+                      {/* <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tight bg-slate-100 text-slate-600">
+                        Staff
+                      </span> */}
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
+                        <button
+                          onClick={() => handleEdit(user)}
+                          className="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 rounded-xl shadow-sm transition-all"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user._id)}
+                          className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl shadow-sm transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

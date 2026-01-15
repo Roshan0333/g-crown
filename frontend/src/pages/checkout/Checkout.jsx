@@ -69,6 +69,15 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
       order_id: data.id,
       
         handler: async function (response) {
+          const formattedAddress = {
+  fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`,
+  mobile: selectedAddress.phone,
+  addressLine: selectedAddress.address,
+  city: selectedAddress.city, 
+  state: selectedAddress.state,
+  pincode: selectedAddress.zip
+};
+
 
   // 🔴 NEW: verify API ला cartItems + total पाठव
   await axios.post("http://localhost:3000/api/payment/verify", {
@@ -77,13 +86,14 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
     razorpay_signature: response.razorpay_signature,
     cartItems: cartItems,   // 🔴 NEW
     totalAmount: total,
-    address: selectedAddress,
     subtotal: subtotal,
     gst: gst,
-    shipping: shipping
+    shipping: shipping,
+    address: formattedAddress,
   });
 
  
+
 
   clearCart();
   navigate("/order-success");

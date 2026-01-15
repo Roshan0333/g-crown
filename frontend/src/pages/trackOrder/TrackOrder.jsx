@@ -78,7 +78,9 @@ export default function TrackOrder() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/${orderId}`);
+        const res = await axios.get( `http://localhost:3000/gcrown/api/v1/customer/order/track/${orderId}`
+);
+
         setOrderData(res.data);
       } catch (err) {
         console.error(err);

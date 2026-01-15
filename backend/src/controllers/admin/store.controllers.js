@@ -5,7 +5,9 @@ import { ApiResponse } from "../../utils/api-response.js";
 const addShowroom = async (req, res) => {
     try {
 
-        const { name, address, city, state, pincode, country, timings, phone, navigateURL } = req.body;
+        const { name, address, city, state, pincode, country, phone, navigateURL } = req.body;
+
+
 
         if (!req.user.role) {
             return res.status(401).json(new ApiError(401, "Not Auth"));
@@ -21,7 +23,10 @@ const addShowroom = async (req, res) => {
                 state: state,
                 pincode: pincode,
                 country: country,
-                timings: timings,
+                timings: {
+                    open: req.body["timings.open"],
+                    close: req.body["timings.close"],
+                },
                 phone: phone,
                 navigateURL: navigateURL,
                 seeDesignsImages: image
