@@ -1,16 +1,18 @@
+
 import axios from "axios";
 import { useEffect, useState } from "react";
+import { Plus,Loader2,X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Edit3, Trash2, MapPin, Loader2, Plus } from "lucide-react";
 
 
 const Address = () => {
+  // --- States ---
+
 
   // Modal & Loading States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-
 
   const [addresses, setAddresses] = useState([]);
 const [formData, setFormData] = useState({
@@ -149,13 +151,11 @@ const handleDelete = async (id) => {
 ))}
 
 
-
       </div>
 
       {/* --- ADD NEW ADDRESS FORM (Static Theme) --- */}
       <h3 className="text-xl font-medium text-[#1B3022] mb-8 uppercase tracking-widest">Add New Address</h3>
       
-
 <form onSubmit={(e) => { e.preventDefault(); handleAddAddress(); }} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-white/50 p-6 border border-gray-100 rounded-lg">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold text-gray-700">First Name*</label>
@@ -258,7 +258,6 @@ const handleDelete = async (id) => {
   className="p-3.5 border border-gray-100 bg-white outline-none focus:border-[#1B3022] text-sm shadow-sm"
 />
 
-
         </div>
 
         <div className="col-span-full mt-4 flex items-center gap-4">
@@ -294,7 +293,6 @@ const handleDelete = async (id) => {
                 <h2 className="text-2xl font-normal text-[#1B3022]">Edit Address</h2>
                 <p className="text-[#CBA135] text-xs font-bold uppercase tracking-widest mt-1">Update your delivery preferences</p>
               </div>
-
 
               <form onSubmit={(e) => e.preventDefault()} className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -335,7 +333,6 @@ const handleDelete = async (id) => {
     {isUpdating ? <Loader2 className="animate-spin" size={16} /> : "Update Address"}
   </button>
 </div>
-
 
               </form>
             </motion.div>
