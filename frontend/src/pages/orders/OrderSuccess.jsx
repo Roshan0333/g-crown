@@ -146,8 +146,25 @@ const grandTotal = Number(order.total || 0);
               {/* DYNAMIC META BAR */}
               <div className="bg-[#1C3A2C] p-6 md:p-8 rounded-sm shadow-xl flex flex-wrap justify-between items-center gap-6 border-b-4 border-[#D4AF37] mb-12">
                 <MetaItem label="Order ID" value={order.displayOrderId} />
-                <MetaItem label="Date" value={new Date(order.date).toLocaleDateString()} />
-                <MetaItem label="Status" value="Confirmed" isStatus />
+
+                    <MetaItem 
+  label="Date" 
+  value={
+    order.date 
+      ? new Date(order.date).toLocaleDateString("en-IN") 
+      : order.createdAt 
+        ? new Date(order.createdAt).toLocaleDateString("en-IN") 
+        : "N/A"
+  }
+/>
+
+
+                      <MetaItem 
+                      label="Status" 
+                        value={order.orderStatus} 
+                        isStatus 
+                      />
+
                 <button  onClick={openInvoice}
                 className="flex items-center gap-2 bg-[#D4AF37] text-[#1C3A2C] px-6 py-3 text-xs font-bold uppercase tracking-widest hover:bg-white transition-all"
                 >
@@ -168,10 +185,16 @@ const grandTotal = Number(order.total || 0);
                       {order.products?.map((item) => (
                         <div key={item.id} className="flex items-center gap-6 py-6">
                           <img 
-                            src={item.img} 
-                            alt={item.name} 
-                            className="w-20 h-24 object-cover border border-[#E5DDCC]" 
-                          />
+  src={
+    item.img?.startsWith("http")
+      ? item.img
+      : `http://localhost:5173${item.img}`
+  }
+  onError={(e) => (e.target.src = "/src/assets/NewArrivalAssets/earrings-1.png")}
+  alt={item.name}
+  className="w-20 h-24 object-cover border border-[#E5DDCC]"
+/>
+
                           <div className="flex-grow">
                             <h4 className="text-[#1C3A2C] font-semibold text-lg">{item.name}</h4>
                             <p className="text-xs text-gray-400 uppercase tracking-widest">

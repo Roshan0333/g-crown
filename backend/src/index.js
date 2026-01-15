@@ -5,6 +5,7 @@ import orderRoutes from "./routers/order/order.routes.js";
 import reviewRoutes from "./routers/order/review.routes.js";
 import addressRoutes from "./routers/order/address.routes.js";
 import paymentRoutes from "./routers/order/payment.routes.js";
+import adminOrderRoutes from "./routers/order/adminOrderRoutes.js";
 
 dotenv.config({
     path:"./.env"
@@ -14,6 +15,7 @@ app.use("/api/orders", orderRoutes);  // IMPORTANT
 app.use("/api/reviews", reviewRoutes);
 app.use("/api/addresses", addressRoutes);
  app.use("/api/payment", paymentRoutes);
+app.use("/api/admin", adminOrderRoutes);
 
 DatabaseConnection();
 
