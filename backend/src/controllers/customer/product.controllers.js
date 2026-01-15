@@ -9,7 +9,7 @@ const getAllProducts = async (req, res) => {
             deleted: { $ne: true },
             status: true
         }).sort({ createdAt: -1 })   // uses index tail part
-        .lean();  ;
+            .lean();;
 
         return res.status(200).json(
             new ApiResponse(200, products, "Products fetched successfully")
@@ -21,7 +21,6 @@ const getAllProducts = async (req, res) => {
         );
     }
 };
-
 
 const addReview = async (req, res) => {
     try {
@@ -39,13 +38,13 @@ const addReview = async (req, res) => {
 
         product.reviews.push({
             customerId: _id,
-    name: `${userDetail.firstName} ${userDetail.lastName}`,
-    email: userDetail.email,
-    title,             // ← add this
-    comment,
-    rating,
-    media: userDetail.profileImage,
-    createdAt: new Date()
+            name: `${userDetail.firstName} ${userDetail.lastName}`,
+            email: userDetail.email,
+            title,             // ← add this
+            comment,
+            rating,
+            media: userDetail.profileImage,
+            createdAt: new Date()
         });
 
         product.rating.totalReviews = product.reviews.length;
@@ -64,79 +63,20 @@ const addReview = async (req, res) => {
     }
 };
 
+const getProductReviews = async (req, res) => {
+    try {
+        const { productId } = req.params;
 
- const getProductReviews = async (req, res) => {
-  try {
-    const { productId } = req.params;
+        const product = await productModel.findById(productId).select("reviews");
 
-    const product = await productModel.findById(productId).select("reviews");
+        if (!product) {
+            return res.status(404).json({ message: "Product not found" });
+        }
 
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+        res.status(200).json(product.reviews || []);
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch reviews" });
     }
-
-    res.status(200).json(product.reviews || []);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch reviews" });
-  }
 };
 
-// const addReview = async (req, res) => {
-//     try {
-//         const { productId } = req.query;
-//         const {_id} = req.user
-
-//         const {
-//             name,
-//             email,
-//             title,
-//             comment,
-//             rating,
-//         } = req.body;
-
-//         const product = await productModel.findById(productId);
-//         const userDetail = await authModel.findById(_id)
-
-//         let fullName = userDetail.firstName+" "+ userDetail.lastName;
-
-//         if(fullName !== name){
-//             return res.status(401).json(new ApiError(401, "User Name not Match."));
-//         }
-
-//         if(email !== userDetail.email){
-//             return res.status(401).json(new ApiError(401, "Email not Match."));
-//         }
-
-//         if (!product) {
-//             return res.status(404).json(new ApiError(404, "Product not found"));
-//         }
-
-//         product.reviews.push({
-//             customerId: _id,
-//             name: name,
-//             email:email,
-//             title:title,
-//             comment:comment,
-//             rating:rating,
-//             media:userDetail.profileImage,
-//             createdAt: new Date()
-//         });
-
-//         product.rating.totalReviews = product.reviews.length;
-//         product.rating.avg = product.reviews.reduce((sum, r) => sum + r.rating, 0) / product.rating.totalReviews;
-
-//         await product.save();
-
-//         return res.status(200).json(new ApiResponse(
-//             200,
-//             null,
-//             "Review added successfully"
-//         ));
-
-//     } catch (err) {
-//         return res.status(500).json(new ApiError(500, err.message));
-//     }
-// };
-
-
-export {getAllProducts, addReview, getProductReviews };
+export { getAllProducts, addReview, getProductReviews };

@@ -22,7 +22,7 @@ const openInvoice = (orderId) => {
 useEffect(() => {
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/orders");
+      const res = await axios.get("http://localhost:3000/api/orders", {withCredentials: true});
       setOrderList(res.data);
     } catch (err) {
       console.log("MyOrders Fetch Error:", err);

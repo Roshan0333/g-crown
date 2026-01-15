@@ -3,16 +3,42 @@ import Address from "../../models/order/Address.js";
 
 export const addAddress = async (req, res) => {
   try {
+    const { _id } = req.user; // userId from token/session
+
     const {
-      firstName, lastName, country, address,
-      city, state, zip, phone, email
+      firstName,
+      lastName,
+      country,
+      address,
+      city,
+      state,
+      zip,
+      phone,
+      email
     } = req.body;
 
-    if (!firstName || !lastName || !country || !address || !city || !state || !zip || !phone || !email) {
+    // Validate required fields
+    if (
+      !firstName || !lastName || !country || !address ||
+      !city || !state || !zip || !phone || !email
+    ) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const newAddress = new Address(req.body);
+    // Create new address with userId
+    const newAddress = new Address({
+      userId: _id,   // attach addressing to the user
+      firstName,
+      lastName,
+      country,
+      address,
+      city,
+      state,
+      zip,
+      phone,
+      email,
+    });
+
     await newAddress.save();
 
     res.status(201).json({ message: "Address saved successfully", newAddress });
@@ -21,9 +47,13 @@ export const addAddress = async (req, res) => {
   }
 };
 
+
 export const getAddresses = async (req, res) => {
   try {
-    const addresses = await Address.find().sort({ createdAt: -1 });
+
+    const {_id} = req.user;
+
+    const addresses = await Address.find({userId:_id}).sort({ createdAt: -1 });
     res.json(addresses);
   } catch (err) {
     res.status(500).json({ error: err.message });

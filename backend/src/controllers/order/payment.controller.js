@@ -63,6 +63,7 @@ const customOrderId = generateOrderId();
 
 
     const orderData = {
+      userId: req.user._id,
       userName: address.fullName,
       userMobile: address.mobile,
       displayOrderId: customOrderId,          // 🔴 User ला दिसणारा
@@ -80,11 +81,13 @@ const customOrderId = generateOrderId();
      
       statusText: "Your order is placed",
       products: cartItems.map(item => ({
+        productId: item.productId,
         name: item.name,
         detail: item.description,
         productImage: item.productImage,
         qty: item.quantity,   // <-- fix
-        price: item.price
+        price: item.price,
+        carat: item.carat
       }))
     };
 

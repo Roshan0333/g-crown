@@ -144,8 +144,6 @@ const UpdateProfile = async (req, res) => {
 
         const updateData = {};
 
-        // let image = req.files?req.files.map(file => `data:image/jpeg;base64,${file.buffer.toString("base64")}`):null;
-
         let userDetail = await auth_Model.findById(_id);
 
         if (userDetail.profileImage) {
@@ -232,7 +230,6 @@ const getAllUsers = async (req, res) => {
         return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]))
     }
 }
-
 
 const deleteUser = async (req, res) => {
     try {

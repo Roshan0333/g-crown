@@ -4,17 +4,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, CreditCard, Truck, ShieldCheck, Lock, Landmark } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import axios from "axios";
-import { useEffect} from "react";
+import { useEffect } from "react";
 
 export default function Checkout() {
   const navigate = useNavigate();
   const { cartItems, getCartTotal, clearCart } = useCart();
-  
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState("card");
   const [addresses, setAddresses] = useState([]);
   const [selectedAddress, setSelectedAddress] = useState(null);
-  
+
 
   const [formData, setFormData] = useState({
     email: "", firstName: "", lastName: "", address: "",
@@ -23,19 +23,19 @@ export default function Checkout() {
 
   const GST_RATE = 0.18;
 
-const { subtotal, gst, shipping, total } = useMemo(() => {
-  const sub = getCartTotal();
-  const gstAmount = sub * GST_RATE;
-  const ship = sub > 0 ? 12.0 : 0;
-  const grandTotal = sub + gstAmount + ship;
+  const { subtotal, gst, shipping, total } = useMemo(() => {
+    const sub = getCartTotal();
+    const gstAmount = sub * GST_RATE;
+    const ship = sub > 0 ? 12.0 : 0;
+    const grandTotal = sub + gstAmount + ship;
 
-  return {
-    subtotal: sub,
-    gst: gstAmount,
-    shipping: ship,
-    total: grandTotal
-  };
-}, [getCartTotal]);
+    return {
+      subtotal: sub,
+      gst: gstAmount,
+      shipping: ship,
+      total: grandTotal
+    };
+  }, [getCartTotal]);
 
 
   const handleInputChange = (e) => {
@@ -43,111 +43,115 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!selectedAddress) {
-    alert("Please select delivery address first");
-    return;
-  }
+    if (!selectedAddress) {
+      alert("Please select delivery address first");
+      return;
+    }
 
-  try {
-    setIsProcessing(true);
+    try {
+      setIsProcessing(true);
 
-    // Backend ला order create करायला call
-    const { data } = await axios.post("http://localhost:3000/api/payment/create-order", {
-      amount: total  // paise मध्ये
-    });
+      // Backend ला order create करायला call
+      const { data } = await axios.post(
+        "http://localhost:3000/api/payment/create-order",
+        { amount: total },        // request body
+        { withCredentials: true } // config
+      );
 
-    const options = {
-      key: "rzp_test_S2ZQ4KbV345VDy", // इथे तुझा Razorpay Key टाक
-      amount: data.amount,
-      currency: "INR",
-      name: "CROWN Jewellery",
-      description: "Order Payment",
-      order_id: data.id,
-      
+
+      const options = {
+        key: "rzp_test_S2ZQ4KbV345VDy", // इथे तुझा Razorpay Key टाक
+        amount: data.amount,
+        currency: "INR",
+        name: "CROWN Jewellery",
+        description: "Order Payment",
+        order_id: data.id,
+
         handler: async function (response) {
           const formattedAddress = {
-  fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`,
-  mobile: selectedAddress.phone,
-  addressLine: selectedAddress.address,
-  city: selectedAddress.city, 
-  state: selectedAddress.state,
-  pincode: selectedAddress.zip
-};
+            fullName: `${selectedAddress.firstName} ${selectedAddress.lastName}`,
+            mobile: selectedAddress.phone,
+            addressLine: selectedAddress.address,
+            city: selectedAddress.city,
+            state: selectedAddress.state,
+            pincode: selectedAddress.zip
+          };
 
 
-  // 🔴 NEW: verify API ला cartItems + total पाठव
-  await axios.post("http://localhost:3000/api/payment/verify", {
-  razorpay_order_id: response.razorpay_order_id,
-  razorpay_payment_id: response.razorpay_payment_id,
-  razorpay_signature: response.razorpay_signature,
+          // 🔴 NEW: verify API ला cartItems + total पाठव
+          await axios.post("http://localhost:3000/api/payment/verify", {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
 
-  cartItems: cartItems.map(item => ({
-    productId: item._id,
-    name: item.name,
-    price: item.price,
-    quantity: item.quantity,
-    productImage:item.productImage
-  })),
+            cartItems: cartItems.map(item => ({
+              productId: item.product._id,
+              name: item.product.name,
+              price: item.product.price?.sale,
+              quantity: item.quantity,
+              productImage: item.product.productImage?.[0],
+              carat: item.purity
+            })),
 
-  totalAmount: total,
-  subtotal: subtotal,
-  gst: gst,
-  shipping: shipping,
-  address: formattedAddress,
-});
+            totalAmount: total,
+            subtotal: subtotal,
+            gst: gst,
+            shipping: shipping,
+            address: formattedAddress,
+          }, {
+            withCredentials: true
+          });
+
+          clearCart();
+          navigate("/order-success");
+        },
+
+        prefill: {
+          name: selectedAddress.firstName,
+          email: formData.email,
+          contact: selectedAddress.phone
+        },
+        theme: {
+          color: "#1C3A2C"
+        }
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+
+      setIsProcessing(false);
+    } catch (error) {
+      console.log(error);
+      alert("Payment Failed");
+      setIsProcessing(false);
+    }
+  };
 
 
- 
-
-
-  clearCart();
-  navigate("/order-success");
-},
-
-      prefill: {
-        name: selectedAddress.firstName,
-        email: formData.email,
-        contact: selectedAddress.phone
-      },
-      theme: {
-        color: "#1C3A2C"
-      }
-    };
-
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-
-    setIsProcessing(false);
-  } catch (error) {
-    console.log(error);
-    alert("Payment Failed");
-    setIsProcessing(false);
-  }
-};
-
-  
   useEffect(() => {
-  axios.get("http://localhost:3000/api/addresses")
-    .then(res => setAddresses(res.data))
-    .catch(err => console.log(err));
-}, []);
+    axios.get("http://localhost:3000/api/addresses", {
+      withCredentials: true
+    })
+      .then(res => setAddresses(res.data))
+      .catch(err => console.log(err));
+  }, []);
 
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-[#FAF7ED] min-h-screen font-serif relative">
-      
+
       {/* Loading Overlay */}
       <AnimatePresence>
         {isProcessing && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 bg-[#1C3A2C]/90 flex flex-col items-center justify-center text-white backdrop-blur-sm"
           >
-            <motion.div 
+            <motion.div
               animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
               className="w-16 h-16 border-t-2 border-[#D4AF37] rounded-full mb-4"
             />
@@ -169,47 +173,46 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           <div className="lg:col-span-7">
             <form onSubmit={handleSubmit} className="space-y-12">
-              
+
               {/* Step 1: Contact */}
-              
+
 
               {/* Step 2: Shipping */}
-             <section>
-  <h2 className="text-xl text-[#1C3A2C] mb-6">Select Shipping Address</h2>
+              <section>
+                <h2 className="text-xl text-[#1C3A2C] mb-6">Select Shipping Address</h2>
 
-  {addresses.map(addr => (
-    <div key={addr._id} className="border p-4 mb-3 bg-white flex justify-between">
-      <label className="flex gap-3 cursor-pointer">
-        <input
-          type="radio"
-          name="address"
-          checked={selectedAddress?._id === addr._id}
-          onChange={() => setSelectedAddress(addr)}
-        />
-        <div>
-          <p className="font-bold">{addr.firstName} {addr.lastName}</p>
-          <p>{addr.address}, {addr.city}, {addr.state} - {addr.zip}</p>
-          <p>{addr.phone}</p>
-        </div>
-      </label>
-      <button className="text-sm underline">Edit</button>
-    </div>
-  ))}
-</section>
+                {addresses.map(addr => (
+                  <div key={addr._id} className="border p-4 mb-3 bg-white flex justify-between">
+                    <label className="flex gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="address"
+                        checked={selectedAddress?._id === addr._id}
+                        onChange={() => setSelectedAddress(addr)}
+                      />
+                      <div>
+                        <p className="font-bold">{addr.firstName} {addr.lastName}</p>
+                        <p>{addr.address}, {addr.city}, {addr.state} - {addr.zip}</p>
+                        <p>{addr.phone}</p>
+                      </div>
+                    </label>
+                    <button className="text-sm underline">Edit</button>
+                  </div>
+                ))}
+              </section>
 
 
               {/* Step 3: Payment */}
-              
+
 
               <button
-  type="submit"
-  disabled={!selectedAddress}
-  className={`w-full py-5 ${
-    !selectedAddress ? "bg-gray-400 cursor-not-allowed" : "bg-[#1C3A2C] text-white"
-  }`}
->
-  Pay ₹{total.toFixed(2)}
-</button>
+                type="submit"
+                disabled={!selectedAddress}
+                className={`w-full py-5 ${!selectedAddress ? "bg-gray-400 cursor-not-allowed" : "bg-[#1C3A2C] text-white"
+                  }`}
+              >
+                Pay ₹{total.toFixed(2)}
+              </button>
 
             </form>
           </div>
@@ -219,42 +222,42 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
               <h2 className="text-xl text-[#1C3A2C] mb-8 border-b border-[#E5DDCC] pb-4">Bag Summary</h2>
               <div className="space-y-6 mb-8 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                 {cartItems.map(item => (
-                  <div key={item.id} className="flex gap-4">
+                  <div key={item.product._id} className="flex gap-4">
                     <img
-  src={item.productImage?.[0]}
-  className="w-16 h-20 object-cover"
-  alt={item.name}
-/>
+                      src={item.product.productImage?.[0]}
+                      className="w-16 h-20 object-cover"
+                      alt={item.name}
+                    />
 
                     <div className="flex-grow">
-                      <p className="text-sm font-medium text-[#1C3A2C]">{item.name}</p>
-                      <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.quantity} units</p>
+                      <p className="text-sm font-medium text-[#1C3A2C]">{item.product.name}</p>
+                      <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.product.quantity} units</p>
                     </div>
-                    <p className="text-sm font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="text-sm font-semibold">${(item.product.price?.sale * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
               <div className="space-y-3 border-t border-[#E5DDCC] pt-6">
 
-  <div className="flex justify-between text-sm text-gray-500">
-    <span>Subtotal</span>
-    <span>₹{subtotal.toFixed(2)}</span>
-  </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
+                </div>
 
-  <div className="flex justify-between text-sm text-gray-500">
-    <span>GST (18%)</span>
-    <span>₹{gst.toFixed(2)}</span>
-  </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>GST (18%)</span>
+                  <span>₹{gst.toFixed(2)}</span>
+                </div>
 
-  <div className="flex justify-between text-sm text-gray-500 italic">
-    <span>Shipping</span>
-    <span>₹{shipping.toFixed(2)}</span>
-  </div>
+                <div className="flex justify-between text-sm text-gray-500 italic">
+                  <span>Shipping</span>
+                  <span>₹{shipping.toFixed(2)}</span>
+                </div>
 
-  <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
-    <span>Grand Total</span>
-    <span>₹{total.toFixed(2)}</span>
-  </div>
+                <div className="flex justify-between text-lg font-bold text-[#1C3A2C] border-t border-dashed border-[#E5DDCC] pt-4">
+                  <span>Grand Total</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
 
 
               </div>

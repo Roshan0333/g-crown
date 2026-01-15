@@ -5,7 +5,6 @@ import { useCart } from "../../context/CartContext";
 import { useFavorites } from "../../context/FavoritesContext";
 
 const ProductCard = ({ product, allproducts }) => {
-  console.log(product)
   const navigate = useNavigate();
   const { cartItems, addToCart, updateQuantity, removeFromCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();

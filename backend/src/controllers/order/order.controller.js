@@ -1,5 +1,5 @@
 
-  import Order from "../../models/order/Order.js";
+import Order from "../../models/order/Order.js";
 import pdf from "html-pdf";
 import fs from "fs";
 import path from "path";
@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
 
 // Get My Orders
 export const getOrders = async (req, res) => {
-  const orders = await Order.find();
+  const orders = await Order.find({userId: req.user._id});
   res.json(orders);
 };
 
@@ -30,6 +30,7 @@ export const createOrder = async (req, res) => {
     ...req.body,
     products,
     displayOrderId,
+    userId: req.user._id,
     orderStatus: "Accepted"
   });
 
@@ -41,9 +42,9 @@ export const createOrder = async (req, res) => {
 // Update Status
 export const updateOrderStatus = async (req, res) => {
   await Order.findByIdAndUpdate(req.params.id, {
-  orderStatus: req.body.status,
-  statusText: req.body.statusText
-});
+    orderStatus: req.body.status,
+    statusText: req.body.statusText
+  });
   res.json({ message: "Order Status Updated" });
 };
 
@@ -57,12 +58,12 @@ export const generateInvoice = async (req, res) => {
     let html = fs.readFileSync(templatePath, "utf8");
 
     const shippingName = order.address
-  ? order.address.fullName
-  : "Customer";
+      ? order.address.fullName
+      : "Customer";
 
-const shippingAddress = order.address
-  ? `${order.address.addressLine}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}, Ph: ${order.address.mobile}`
-  : "Not Available";
+    const shippingAddress = order.address
+      ? `${order.address.addressLine}, ${order.address.city}, ${order.address.state} - ${order.address.pincode}, Ph: ${order.address.mobile}`
+      : "Not Available";
 
 
     let rows = "";
@@ -78,21 +79,21 @@ const shippingAddress = order.address
     });
 
     html = html
-  .replace("{{invoiceNo}}", order.invoiceNo || "INV-GC-" + Date.now())
-  .replace("{{orderId}}", order.displayOrderId)
+      .replace("{{invoiceNo}}", order.invoiceNo || "INV-GC-" + Date.now())
+      .replace("{{orderId}}", order.displayOrderId)
 
-  .replace("{{invoiceDate}}", new Date(order.date).toDateString())
+      .replace("{{invoiceDate}}", new Date(order.date).toDateString())
 
-  // Company Billing (fixed)
-  .replace("{{billingName}}", "GC Jewellery Pvt Ltd")
-  .replace("{{billingAddress}}", "FC Road, Pune, Maharashtra - 411004")
+      // Company Billing (fixed)
+      .replace("{{billingName}}", "GC Jewellery Pvt Ltd")
+      .replace("{{billingAddress}}", "FC Road, Pune, Maharashtra - 411004")
 
-  // Customer Shipping (safe)
-  .replace("{{shippingName}}", shippingName)
-  .replace("{{shippingAddress}}", shippingAddress)
+      // Customer Shipping (safe)
+      .replace("{{shippingName}}", shippingName)
+      .replace("{{shippingAddress}}", shippingAddress)
 
-  .replace("{{productRows}}", rows)
-  .replace("{{grandTotal}}", order.total);
+      .replace("{{productRows}}", rows)
+      .replace("{{grandTotal}}", order.total);
 
 
 
@@ -136,6 +137,7 @@ export const saveOrder = async (req, res) => {
       ...req.body,
       products: products,
       displayOrderId,
+      userId: req.user._id,
       orderStatus: "Accepted"
     });
 
@@ -162,4 +164,3 @@ export const cancelOrder = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-  

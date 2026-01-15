@@ -114,14 +114,10 @@ const UpdateProfile = async (req, res) => {
 
         const updateData = {};
 
-        // let image = req.file ? `data:${file.mimetype};base64,${file.buffer.toString("base64")}`:null;
-
         let userDetail = await auth_Model.findById(_id);
 
-        
-
         if(userDetail.contact){
-
+            return res.status(401).json(new ApiError(401, "Duplicate Contact."));
         }
 
         if (userDetail.profileImage) {

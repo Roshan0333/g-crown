@@ -14,8 +14,6 @@ const addShowroom = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
-        // const image = req.files ? req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`) : [];
-
         let image = [];
 
         for (const file of req.files) {
@@ -104,7 +102,6 @@ const hardDeleteShowroom = async (req, res) => {
 
         let store = Showroom.findById(id);
 
-        // ---- DELETE CLOUDINARY IMAGES ---- //
         if (store.seeDesignsImages?.length) {
             await Promise.all(
                 store.seeDesignsImages.map(imgUrl => deleteFromCloudinary(imgUrl))

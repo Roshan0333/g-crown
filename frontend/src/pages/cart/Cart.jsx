@@ -17,7 +17,14 @@ export default function Cart() {
     const ship = sub > 0 ? 12.00 : 0;
     const disc = sub * (discountPercent / 100);
     const count = cartItems.reduce((acc, item) => acc + item.quantity, 0);
-    return { subtotal: sub, shipping: ship, discountAmount: disc, total: (sub + ship) - disc, itemsCount: count };
+
+    return { 
+      subtotal: sub, 
+      shipping: ship, 
+      discountAmount: disc, 
+      total: (sub + ship) - disc, 
+      itemsCount: count 
+    };
   }, [cartItems, getCartTotal, discountPercent]);
 
   const handleApplyCoupon = () => {
@@ -30,13 +37,17 @@ export default function Cart() {
     }
   };
 
-  /**
-   * DYNAMIC CHECKOUT HANDLER
-   * This function prepares the order data and sends it to the Checkout page.
-   */
   const handleConfirmOrder = () => {
     const orderSnapshot = {
-      items: cartItems,
+      items: cartItems.map(item => ({
+        productId: item.product._id,
+        name: item.product.name,
+        purity: item.purity,
+        price: item.product.price?.sale || 0,
+        quantity: item.quantity,
+        productImage: item.product.productImage?.[0],
+        category: item.product.category
+      })),
       subtotal,
       shipping,
       discountAmount,
@@ -44,7 +55,6 @@ export default function Cart() {
       discountPercent
     };
 
-    // Navigate to checkout and pass the order data as state
     navigate("/checkout", { state: { order: orderSnapshot } });
   };
 
@@ -100,52 +110,78 @@ export default function Cart() {
 
               <div className="space-y-8">
                 <AnimatePresence>
-                 {cartItems.map((item) => {
-  return (
-    <motion.div
-      key={item._id}
-      layout
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 50 }}
-      className="grid grid-cols-1 md:grid-cols-12 items-center gap-4 border-b border-[#FAF7ED] pb-6 last:border-0"
-    >
-      <div className="col-span-12 md:col-span-6 flex items-center gap-4">
-        <button onClick={() => removeFromCart(item._id)} className="text-gray-400 hover:text-red-500 transition-colors">
-          <X size={18} />
-        </button>
+                  {cartItems.map((item) => {
+                    const price = Number(item.product.price?.sale || 0);
+                    const subtotal = price * item.quantity;
 
-        <img
-          src={item.productImage?.[0]}
-          alt={item.name}
-          className="w-20 h-24 object-cover border border-[#E5DDCC]"
-        />
+                    return (
+                      <motion.div
+                        key={item.product._id + item.purity}
+                        layout
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 50 }}
+                        className="grid grid-cols-1 md:grid-cols-12 items-center gap-4 border-b border-[#FAF7ED] pb-6 last:border-0"
+                      >
+                        <div className="col-span-12 md:col-span-6 flex items-center gap-4">
+                          <button
+                            onClick={() => removeFromCart(item.product._id, item.purity)}
+                            className="text-gray-400 hover:text-red-500 transition-colors"
+                          >
+                            <X size={18} />
+                          </button>
 
-        <div>
-          <h3 className="text-md font-semibold text-[#1C3A2C]">{item.name}</h3>
-          <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">{item.category}</p>
-        </div>
-      </div>
+                          <img
+                            src={item.product.productImage?.[0]}
+                            alt={item.product.name}
+                            className="w-20 h-24 object-cover border border-[#E5DDCC]"
+                          />
 
-      <div className="col-span-4 md:col-span-2 text-center text-[#1C3A2C]">
-        ₹{Number(item.price).toLocaleString()}
-      </div>
+                          <div>
+                            <h3 className="text-md font-semibold text-[#1C3A2C]">
+                              {item.product.name}
+                            </h3>
+                            <p className="text-[10px] text-gray-400 uppercase tracking-[0.2em]">
+                              {item.product.category}
+                            </p>
+                            <p className="text-[10px] text-[#1C3A2C] uppercase tracking-wider">
+                              Purity: {item.purity}
+                            </p>
+                          </div>
+                        </div>
 
-      <div className="col-span-4 md:col-span-2 flex justify-center">
-        <div className="flex items-center border border-[#E5DDCC] bg-white px-2 py-1">
-          <button onClick={() => updateQuantity(item._id, item.quantity - 1)} className="p-1"><Minus size={14} /></button>
-          <span className="px-4 text-sm font-sans">{item.quantity}</span>
-          <button onClick={() => updateQuantity(item._id, item.quantity + 1)} className="p-1"><Plus size={14} /></button>
-        </div>
-      </div>
+                        <div className="col-span-4 md:col-span-2 text-center text-[#1C3A2C]">
+                          ₹{price.toLocaleString()}
+                        </div>
 
-      <div className="col-span-4 md:col-span-2 text-right text-[#1C3A2C] font-bold">
-        ₹{(Number(item.price) * item.quantity).toLocaleString()}
-      </div>
-    </motion.div>
-  );
-})}
+                        <div className="col-span-4 md:col-span-2 flex justify-center">
+                          <div className="flex items-center border border-[#E5DDCC] bg-white px-2 py-1">
+                            <button
+                              onClick={() => {updateQuantity(item.product._id, item.purity, item.quantity - 1)
+                                console.log(item.quantity - 1)
+                              }}
+                              className="p-1"
+                            >
+                              <Minus size={14} />
+                            </button>
+                            <span className="px-4 text-sm font-sans">{item.quantity}</span>
+                            <button
+                              onClick={() => {updateQuantity(item.product._id, item.purity, item.quantity + 1);
+                                console.log(item.quantity +1)
+                              }}
+                              className="p-1"
+                            >
+                              <Plus size={14} />
+                            </button>
+                          </div>
+                        </div>
 
+                        <div className="col-span-4 md:col-span-2 text-right text-[#1C3A2C] font-bold">
+                          ₹{subtotal.toLocaleString()}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
               </div>
             </div>

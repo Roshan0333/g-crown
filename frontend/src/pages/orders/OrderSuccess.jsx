@@ -187,7 +187,7 @@ const grandTotal = Number(order.total || 0);
                    <img
   src={
     item.productImage && item.productImage[0]
-      ? `http://localhost:3000/uploads/${item.productImage[0]}`
+      ? item.productImage[0]
       : "/src/assets/NewArrivalAssets/earrings-1.png"
   }
   alt={item.name}
@@ -208,7 +208,7 @@ const grandTotal = Number(order.total || 0);
                           </div>
                           <div className="text-right">
                              <p className="text-[#1C3A2C] font-bold">
-                             ₹{Number(item.price || 0).toLocaleString()}
+                             ₹{(subtotal.toLocaleString() || 0).toLocaleString()}
                                       </p>
                           </div>
                         </div>

@@ -88,7 +88,6 @@ const removeAll = async (req, res) => {
   }
 };
 
-
 const getWishlist = async (req, res) => {
   try {
     const { _id } = req.user;
@@ -119,7 +118,5 @@ const getWishlist = async (req, res) => {
       .json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
   }
 };
-
-
 
 export {addWishlist, removeWishlist, removeAll,  getWishlist};
