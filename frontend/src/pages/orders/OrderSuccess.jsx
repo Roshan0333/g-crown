@@ -184,16 +184,20 @@ const grandTotal = Number(order.total || 0);
                     <div className="divide-y divide-[#FAF7ED]">
                       {order.products?.map((item) => (
                         <div key={item.id} className="flex items-center gap-6 py-6">
-                          <img 
+                   <img
   src={
-    item.img?.startsWith("http")
-      ? item.img
-      : `http://localhost:5173${item.img}`
+    item.productImage && item.productImage[0]
+      ? `http://localhost:3000/uploads/${item.productImage[0]}`
+      : "/src/assets/NewArrivalAssets/earrings-1.png"
   }
-  onError={(e) => (e.target.src = "/src/assets/NewArrivalAssets/earrings-1.png")}
   alt={item.name}
   className="w-20 h-24 object-cover border border-[#E5DDCC]"
 />
+
+
+
+
+
 
                           <div className="flex-grow">
                             <h4 className="text-[#1C3A2C] font-semibold text-lg">{item.name}</h4>

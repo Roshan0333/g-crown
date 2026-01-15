@@ -15,24 +15,28 @@ export const getOrders = async (req, res) => {
   res.json(orders);
 };
 
-// Create Order
-// export const createOrder = async (req, res) => {
-//   const newOrder = new Order(req.body);
-//   await newOrder.save();
-//   res.json({ message: "Order Created Successfully" });
-// };
 export const createOrder = async (req, res) => {
-     // 🔴 same ID everywhere
+
+  const displayOrderId = "GC-" + Date.now();
+
+  const products = req.body.products.map(p => ({
+    name: p.name,
+    price: p.price,
+    qty: p.qty,
+    productImage: p.productImage   // 🔥 ही line add कर
+  }));
 
   const newOrder = new Order({
     ...req.body,
-    displayOrderId: displayOrderId,
-    status: "Accepted"
+    products,
+    displayOrderId,
+    orderStatus: "Accepted"
   });
 
   await newOrder.save();
   res.json(newOrder);
 };
+
 
 // Update Status
 export const updateOrderStatus = async (req, res) => {
@@ -117,14 +121,21 @@ const shippingAddress = order.address
 //     res.status(500).json({ error: err.message });
 //   }
 // };
-
 export const saveOrder = async (req, res) => {
   try {
     const displayOrderId = "GC-" + Date.now();
 
+    const products = req.body.products.map(p => ({
+      name: p.name,
+      price: p.price,
+      qty: p.qty,
+      productImage: p.productImage   // 🔥 THIS LINE IS MAIN
+    }));
+
     const order = new Order({
       ...req.body,
-      displayOrderId: displayOrderId,
+      products: products,
+      displayOrderId,
       orderStatus: "Accepted"
     });
 
@@ -134,6 +145,8 @@ export const saveOrder = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
 
 
 
