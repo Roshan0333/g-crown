@@ -154,7 +154,7 @@ export default function FindStore() {
               {/* Store Image */}
               <div className="relative h-[240px] overflow-hidden">
                 <img
-                  src={(item.seeDesignsImages.length === 0) ? storeImg : `data:image/jpeg;base64,${item.seeDesignsImages[0]}`}
+                  src={(item.seeDesignsImages.length === 0) ? storeImg : item.seeDesignsImages[0]}
                   alt="G-Crown Store Interior"
                   className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />

@@ -4,7 +4,6 @@ import {
 } from "lucide-react";
 import Toast from "../../components/admin/Toast.jsx";
 import { axiosGetService, axiosPostService, axiosDeleteService } from "../../services/axios.js";
-import axios from "axios";
 
 const Showrooms = () => {
   const [showrooms, setShowrooms] = useState([]);
@@ -143,7 +142,7 @@ const Showrooms = () => {
                   <div className="w-48 bg-slate-100 relative overflow-hidden flex-shrink-0 rounded-l-[2rem]">
                     {img ? (
                       <img
-                        src={`data:image/*;base64,${img}`}
+                        src={img}
                         className="h-full w-full object-cover rounded-2xl"
                       />
                     ) : (
@@ -173,6 +172,11 @@ const Showrooms = () => {
                         <div className="flex gap-2 items-start">
                           <MapPin size={16} className="text-indigo-500" />
                           <span>{s.address}</span>
+                        </div>
+
+                        <div className="flex gap-2 items-start">
+                          <MapPin size={16} className="text-indigo-500" />
+                          <span>{s.pincode}</span>
                         </div>
 
                         <div className="flex gap-2 items-center">

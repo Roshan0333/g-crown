@@ -159,12 +159,12 @@ const Users = () => {
                     </td>
                     <td className="px-8 py-5">
                       <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                        <button
+                        {/* <button
                           onClick={() => handleEdit(user)}
                           className="p-2.5 bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 rounded-xl shadow-sm transition-all"
                         >
                           <Edit3 size={16} />
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(user._id)}
                           className="p-2.5 bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-200 rounded-xl shadow-sm transition-all"
