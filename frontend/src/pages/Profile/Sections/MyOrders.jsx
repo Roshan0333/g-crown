@@ -41,14 +41,28 @@ useEffect(() => {
 
 const submitReview = async () => {
 
-  await axios.post("http://localhost:3000/api/reviews/add", {
-    orderId: selectedOrderId,
-    rating,
-    comment
-  });
+  try{
 
-  alert("Review saved in DB");
+  
+  await axios.post(`http://localhost:3000/gcrown/api/v1/customer/product/review?productId=${selectedOrderId}`, {
+    orderId: selectedOrderId,
+        comment,
+        rating
+  },
+    {
+    withCredentials: true 
+  }
+);
+
+  alert("Review added Successfully");
   setShowReview(false);
+  setRating(0);
+    setComment("");
+}
+catch(err){
+   console.error(err);
+    alert(err.response?.data?.message || "Review failed");
+}
 };
 
 
@@ -187,7 +201,7 @@ const cancelOrder = async (id) => {
                 type="button"
                    onClick={() => {
                        setShowReview(true);
-                          setSelectedOrderId(order._id);   // 🔴 हा line missing होता
+                          setSelectedOrderId(order.products[0].productId);   // 🔴 हा line missing होता
 
                          }}
                        className="bg-[#1B3022] text-white px-4 py-2 text-sm"
