@@ -24,9 +24,9 @@ app.use(cors({
 
 app.use(cookieParser());
 
-app.use(express.urlencoded({extended: true}));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-app.use(express.json());
+app.use(express.json({limit: '100mb'}));
 
 app.use("/gcrown/api/v1/customer/auth", customerAuthRoutes);
 app.use("/gcrown/api/v1/customer/product", customerProductRoutes);

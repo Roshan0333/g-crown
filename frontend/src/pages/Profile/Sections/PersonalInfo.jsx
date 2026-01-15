@@ -122,7 +122,7 @@ const PersonalInfo = () => {
               ? ProfilePic
               : image.startsWith("blob:")
                 ? image
-                : `data:image/*;base64,${image}`
+                : image
           }
           className="rounded-full w-full h-full object-cover border-2 border-white shadow-sm"
           alt="Profile"

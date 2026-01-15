@@ -136,21 +136,30 @@ const cancelOrder = async (id) => {
 
           {/* Products */}
           <div className="p-4">
-            {order.products.map((item, i) => (
-              <div key={i} className="flex gap-4 border-b py-3">
-                <img
-                  src={item.img || Earing}
-                  alt={item.name}
-                  className="w-14 h-14 object-cover"
-                />
-                <div>
-                  <h4 className="font-bold">{item.name}</h4>
-                  <p className="text-sm text-gray-400">{item.detail}</p>
-                    <p className="text-xs text-gray-500">Qty: {item.qty}</p>   {/* 🔴 NEW */}
+          {order.products.map((item, i) => {
 
-                </div>
-              </div>
-            ))}
+  return (
+    <div key={i} className="flex gap-4 border-b py-3">
+      <img
+        src={
+          item.productImage && item.productImage[0]
+            ? item.productImage[0]
+            : Earing
+        }
+        alt={item.name}
+        className="w-14 h-14 object-cover"
+      />
+
+      <div>
+        <h4 className="font-bold">{item.name}</h4>
+        <p className="text-sm text-gray-400">{item.detail}</p>
+        <p className="text-xs text-gray-500">Qty: {item.qty}</p>
+      </div>
+    </div>
+  );
+})}
+
+
           </div>
 
           {/* Status & Actions */}

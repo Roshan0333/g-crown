@@ -34,7 +34,8 @@ export const verifyPayment = async (req, res) => {
       address,
       subtotal,
   gst,
-  shipping
+  shipping,
+  productImage
     } = req.body;
 
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -71,19 +72,17 @@ const customOrderId = generateOrderId();
       method: "Razorpay",
       date: new Date(),
       address: address,
-          
   subtotal: subtotal,   // ✔
   gst: gst,             // ✔
   shipping: shipping,   // ✔
   
-
       orderStatus: "Confirmed",
-
+     
       statusText: "Your order is placed",
       products: cartItems.map(item => ({
         name: item.name,
         detail: item.description,
-        img: item.image,
+        productImage: item.productImage,
         qty: item.quantity,   // <-- fix
         price: item.price
       }))
