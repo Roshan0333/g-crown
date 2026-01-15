@@ -34,19 +34,37 @@ const ProductDetails = () => {
   const favorited = product ? isFavorite(product._id) : false;
 
   const handleAddToCart = () => {
-    if (product) {
-      addToCart(product, quantity);
-      setShowAddedToCart(true);
-      setTimeout(() => setShowAddedToCart(false), 2000);
-    }
-  };
+  if (product) {
+    const productWithPrice = {
+      ...product,
+      price: {
+        sale: product.variants[selectPurity].sale,
+        mrp: product.variants[selectPurity].price
+      }
+    };
 
-  const handleBuyNow = () => {
-    if (product) {
-      addToCart(product, quantity);
-      navigate("/cart");
-    }
-  };
+    addToCart(productWithPrice, quantity);
+    setShowAddedToCart(true);
+    setTimeout(() => setShowAddedToCart(false), 2000);
+  }
+};
+
+
+const handleBuyNow = () => {
+  if (product) {
+    const productWithPrice = {
+      ...product,
+      price: {
+        sale: product.variants[selectPurity].sale,
+        mrp: product.variants[selectPurity].price
+      }
+    };
+
+    addToCart(productWithPrice, quantity);
+    navigate("/cart");
+  }
+};
+
 
   if (!product) {
     return (

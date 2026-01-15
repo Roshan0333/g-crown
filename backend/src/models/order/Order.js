@@ -46,7 +46,7 @@ refundTransactionId: String,
       name: String,      // Product name
       detail: String,  
       carat: String,   // Description
-      img: String,       // Product image
+       productImage: [String],       // Product image
       qty: Number,       // Quantity
       price: Number      // Single product price
     }

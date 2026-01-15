@@ -81,16 +81,25 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
 
   // 🔴 NEW: verify API ला cartItems + total पाठव
   await axios.post("http://localhost:3000/api/payment/verify", {
-    razorpay_order_id: response.razorpay_order_id,
-    razorpay_payment_id: response.razorpay_payment_id,
-    razorpay_signature: response.razorpay_signature,
-    cartItems: cartItems,   // 🔴 NEW
-    totalAmount: total,
-    subtotal: subtotal,
-    gst: gst,
-    shipping: shipping,
-    address: formattedAddress,
-  });
+  razorpay_order_id: response.razorpay_order_id,
+  razorpay_payment_id: response.razorpay_payment_id,
+  razorpay_signature: response.razorpay_signature,
+
+  cartItems: cartItems.map(item => ({
+    productId: item._id,
+    name: item.name,
+    price: item.price,
+    quantity: item.quantity,
+    productImage:item.productImage
+  })),
+
+  totalAmount: total,
+  subtotal: subtotal,
+  gst: gst,
+  shipping: shipping,
+  address: formattedAddress,
+});
+
 
  
 
@@ -211,7 +220,12 @@ const { subtotal, gst, shipping, total } = useMemo(() => {
               <div className="space-y-6 mb-8 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                 {cartItems.map(item => (
                   <div key={item.id} className="flex gap-4">
-                    <img src={item.image} className="w-16 h-20 object-cover" alt="" />
+                    <img
+  src={item.productImage?.[0]}
+  className="w-16 h-20 object-cover"
+  alt={item.name}
+/>
+
                     <div className="flex-grow">
                       <p className="text-sm font-medium text-[#1C3A2C]">{item.name}</p>
                       <p className="text-[10px] text-gray-400 uppercase tracking-widest">{item.quantity} units</p>
