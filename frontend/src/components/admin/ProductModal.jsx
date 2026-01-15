@@ -146,7 +146,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
         sale: Number(formData?.price?.sale),
       });
 
-      if(!apiPriceResponse.ok){
+      if (!apiPriceResponse.ok) {
         alert(apiPriceResponse.data.message || "Price not update.")
         return
       }
@@ -157,8 +157,8 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
         variants: cleanedVariants,
       });
 
-      if(!apiPriceResponse.ok){
-        alert(apiPriceResponse.data.message || "Quantity not update.")
+      if (!apiPriceResponse.ok) {
+        alert(apiQuantityResponse.data.message || "Quantity not update.")
         return
       }
 
@@ -197,7 +197,7 @@ const ProductModal = ({ product, onClose, onSuccess }) => {
     } else {
       alert(apiResponse.data.message);
     }
-  };
+  }
 
 
   return (

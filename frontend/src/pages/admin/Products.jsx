@@ -120,49 +120,6 @@ const Products = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    const formData = new FormData();
-
-    // Basic Fields
-    formData.append("name", productData.name);
-    formData.append("slug", productData.slug);
-    formData.append("sku", productData.sku);
-    formData.append("category", productData.category);
-    formData.append("brand", productData.brand);
-    formData.append("productCollection", productData.productCollection);
-    formData.append("stockStatus", productData.stockStatus);
-
-    // Price Object
-    formData.append("price", JSON.stringify(productData.price));
-
-    // Variants Array
-    formData.append("variants", JSON.stringify(productData.variants));
-
-    // Attributes Object
-    formData.append("attributes", JSON.stringify(productData.attributes));
-
-    // Images (IMPORTANT)
-    if (productData.productImage && productData.productImage.length > 0) {
-      productData.productImage.forEach((file) => {
-        formData.append("productImage", file);
-      });
-    }
-
-    const apiResponse = await axiosPostService(
-      "/admin/product/create",
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
-
-    if (!apiResponse.ok) {
-      alert(apiResponse.data.message);
-      return;
-    }
-
-    onSuccess(apiResponse.data.data);
-  };
-
-
   useEffect(() => {
     loadProducts();
   }, []);

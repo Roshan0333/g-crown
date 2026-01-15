@@ -17,6 +17,8 @@ import {
   LogOut
 } from "lucide-react";
 
+import { axiosPostService } from "../../services/axios";
+
 const MENU = [
   { name: "Dashboard", path: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Products", path: "/admin/products", icon: Package },
@@ -41,9 +43,17 @@ const AdminLayout = () => {
     adminName = localStorage.getItem("adminToken") || adminName;
   }
 
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    navigate("/admin/login");
+  const handleLogout = async () => {
+    const apiResponse =await axiosPostService("/admin/auth/signout");
+
+    if(!apiResponse.ok){
+      alert(apiResponse.data.message || "Signout Failed")
+    }
+    else{
+      localStorage.clear()
+      localStorage.removeItem("adminToken");
+      navigate("/admin/login");
+    }
   };
 
   const linkClass = ({ isActive }) =>

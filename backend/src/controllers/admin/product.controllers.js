@@ -1,5 +1,5 @@
 import productModel from "../../models/common/product.models.js";
-import cloudinary from "../../configs/cloudinary.js";
+import {cloudinary, deleteFromCloudinary} from "../../configs/cloudinary.js";
 import { ApiError } from "../../utils/api-error.js";
 import { ApiResponse } from "../../utils/api-response.js";
 
@@ -25,22 +25,27 @@ const uploadNewProduct = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
-        // const uploadToCloudinary = (file) => {
-        //     return new Promise((resolve, reject) => {
-        //         cloudinary.uploader.upload_stream(
+        // let imageUrls = [];
+
+        // for (const file of req.files) {
+        //     const upload = await new Promise((resolve, reject) => {
+        //         const stream = cloudinary.uploader.upload_stream(
         //             { folder: "products" },
         //             (err, result) => {
-        //                 if (err) return reject(err);
-        //                 resolve(result.secure_url);
+        //                 if (err) reject(err);
+        //                 else resolve({
+        //                     url: result.secure_url,
+        //                     public_id: result.public_id
+        //                 });
         //             }
-        //         ).end(file.buffer);
+        //         );
+        //         stream.end(file.buffer);
         //     });
-        // };
 
-        // let imageUrls = [];
-        // if (req.files?.length) {
-        //     imageUrls = await Promise.all(req.files.map(uploadToCloudinary));
+        //     imageUrls.push(upload.url); // <-- IMPORTANT CHANGE
         // }
+
+
 
 
         let imageUrls = req.files?req.files.map(file => `data:image/jpeg;base64,${file.buffer.toString("base64")}`):null;
@@ -200,13 +205,26 @@ const hardDeleteProduct = async (req, res) => {
             return res.status(401).json(new ApiError(401, "Not Auth"));
         }
 
-        const product = await productModel.findByIdAndDelete(productId);
+        const product = await productModel.findById(productId);
 
         if (!product) {
             return res.status(404).json(new ApiError(404, "Product not found"));
         }
 
-        return res.status(200).json(new ApiResponse(200, null, "Product deleted permanently"));
+        // ---- DELETE CLOUDINARY IMAGES ---- //
+        // if (product.productImage?.length) {
+        //     await Promise.all(
+        //         product.productImage.map(imgUrl => deleteFromCloudinary(imgUrl))
+        //     );
+        // }
+
+        // ---- DELETE PRODUCT FROM DB ---- //
+        await productModel.findByIdAndDelete(productId);
+
+        return res.status(200).json(
+            new ApiResponse(200, null, "Product deleted permanently")
+        );
+
     } catch (err) {
         return res.status(500).json(new ApiError(500, err.message));
     }
@@ -262,57 +280,20 @@ const restoreProduct = async (req, res) => {
 };
 
 // const imageUpload = async (req, res) => {
-//   try {
-//     const { _id } = req.query;
+//     try {
+//         const { _id } = req.query
+//         let images = req.files ? req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`) : null;
 
-//     if (!req.files || req.files.length === 0)
-//       return res.status(400).json(new ApiError(400, "No files uploaded"));
+//         await productModel.findByIdAndUpdate(_id,
+//             { productImage: images }
+//         )
 
-//     let urls = [];
-
-//     for (const file of req.files) {
-//       const upload = await new Promise((resolve, reject) => {
-//         const stream = cloudinary.uploader.upload_stream(
-//           { folder: "products" },
-//           (err, result) => {
-//             if (err) reject(err);
-//             else resolve(result.secure_url);
-//           }
-//         );
-//         stream.end(file.buffer);
-//       });
-//       urls.push(upload);
+//         return res.status(200).json(new ApiResponse(200));
 //     }
-
-//     let product = await productModel.findByIdAndUpdate(
-//       _id,
-//       { $set: { productImage: urls } },
-//       { new: true }
-//     );
-
-//     return res.status(200).json(
-//       new ApiResponse(200, product, "Image Updated Successfully")
-//     );
-//   } catch (err) {
-//     return res.status(500).json(new ApiError(500, err.message));
-//   }
-// };
-
-const imageUpload = async (req, res) => {
-    try {
-        const { _id } = req.query
-        let images = req.files ? req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`) : null;
-
-        await productModel.findByIdAndUpdate(_id,
-            { productImage: images }
-        )
-
-        return res.status(200).json(new ApiResponse(200));
-    }
-    catch (err) {
-        return res.status(500).json(new ApiError(500, err.message));
-    }
-}
+//     catch (err) {
+//         return res.status(500).json(new ApiError(500, err.message));
+//     }
+// }
 
 
-export { uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct, imageUpload };
+export { uploadNewProduct, getAllItem, updateQuantity, updatePrice, hardDeleteProduct, softDeleteProduct, restoreProduct};
