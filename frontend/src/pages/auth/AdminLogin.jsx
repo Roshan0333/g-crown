@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, RefreshCw } from "lucide-react";
 import modelImage from "../../assets/authPages/signInModel.png";
 import logo from "../../assets/authPages/logo.png";
-import { axiosPostService } from "../../services/axios";
+import { axiosPostService, axiosPutService } from "../../services/axios";
 
 const AdminSignIn = () => {
   const navigate = useNavigate();
@@ -23,6 +23,7 @@ const AdminSignIn = () => {
     password: "",
     newPassword: "",
     confirmPassword: "",
+    securityKey:"",
     otp: ""
   });
 
@@ -58,7 +59,7 @@ const AdminSignIn = () => {
 
       }
 
-      const apiResponse = await axiosPostService("/admin/auth/login",adminData );
+      const apiResponse = await axiosPostService("/admin/auth/login", adminData);
 
       if (!apiResponse.ok) {
         console.log(apiResponse)
@@ -67,8 +68,7 @@ const AdminSignIn = () => {
       } else {
         // localStorage.setItem("role", "admin");
         navigate("/admin/dashboard");
-        localStorage.setItem("adminToken", apiResponse.data.token);
-        console.log(apiResponse.data.message)
+        localStorage.setItem("adminToken", "succesfully");
       }
     } catch (error) {
       console.error("Login Error:", error);
@@ -85,8 +85,7 @@ const AdminSignIn = () => {
 
     setIsLoading(true);
     try {
-      const apiResponse = await axiosPostService("/admin/auth/forgetPasswordOtp", {
-        email: formData.email});
+      const apiResponse = await axiosPostService("/admin/auth/forgetPasswordOtp", { email: formData.email });
       if (!apiResponse.ok) {
         alert(apiResponse.data.message || "Failed to send verification code.");
         return
@@ -106,17 +105,29 @@ const AdminSignIn = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const apiResponse = await axiosPostService("/admin/auth/forgetPassword", {
-        email: formData.email,
-        password: formData.newPassword
-      });
-
-      if (!apiResponse.ok) {
-        alert(response.data.message || "The code entered is incorrect.");
+      if (sendOtp !== formData.otp) {
+        alert("The code entered is incorrect.");
         return
       } else {
-        alert("Account secured. Password updated successfully.");
-        navigate("/");
+
+        const adminData ={
+          email: formData.email,
+          password: formData.newPassword,
+          securityKey: formData.securityKey
+        }
+
+        console.log(adminData)
+        const apiResponse = await axiosPutService("/admin/auth/forgetPassword", adminData);
+
+        if (!apiResponse.ok) {
+          console.log(apiResponse)
+          alert(apiResponse.data.message || "Password Not Change.");
+          return
+        } else {
+          alert("Account secured. Password updated successfully.");
+          navigate("/admin/dashboard");
+        localStorage.setItem("adminToken", "succesfully");
+        }
       }
     } catch (error) {
       console.error("Verification Error:", error);
@@ -229,6 +240,19 @@ const AdminSignIn = () => {
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold uppercase tracking-widest opacity-70">Verify Email</label>
                   <input id="email" required type="email" value={formData.email} onChange={handleChange} className="auth-input w-full border-b border-gray-200 bg-transparent py-4 outline-none focus:border-[#CBA135]" />
+                </div>
+                <label htmlFor="adminSecretKey" className="text-[11px] font-bold uppercase tracking-widest opacity-70">Authorization Key*</label>
+                <div className="relative">
+                  <input
+                    id="securityKey"
+                    required
+                    name="securityKey"
+                    type="password"
+                    value={formData.securityKey}
+                    onChange={handleChange}
+                    placeholder="Secret Key"
+                    className="auth-input w-full border-b border-gray-200 bg-transparent py-4 outline-none focus:border-[#CBA135]"
+                  />
                 </div>
                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-4">
                   <div className="space-y-2">

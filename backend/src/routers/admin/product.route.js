@@ -14,7 +14,7 @@ router.route("/getall").get(isAuth, getAllItem);
 router.route("/price").put(isAuth, updatePrice);
 router.route("/quantity").put(isAuth,updateQuantity);
 router.route("/harddelete").delete(isAuth, hardDeleteProduct);
-router.route("/softdelete").delete(isAuth,softDeleteProduct);
+router.route("/softdelete").put(isAuth,softDeleteProduct);
 router.route("/restore").put(isAuth, restoreProduct);
 router.route("/image").put(isAuth, upload.array("productImage", 5), imageUpload)
 

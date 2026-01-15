@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import ProductModal from "../../components/admin/ProductModal";
 import Toast from "../../components/admin/Toast.jsx";
 import {
@@ -15,6 +15,8 @@ import {
   TrendingUp,
   ArrowUpDown,
 } from "lucide-react";
+
+import { axiosGetService, axiosDeleteService } from "../../services/axios.js"
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -36,7 +38,7 @@ const Products = () => {
       },
       {
         label: "Out of Stock",
-        value: products.filter((p) => p.stockStatus !== "In Stock").length,
+        value: products.filter((p) => p?.stockStatus && p.stockStatus !== "In Stock").length,
         icon: AlertTriangle,
         color: "text-red-600",
         bg: "bg-red-50",
@@ -44,7 +46,7 @@ const Products = () => {
       {
         label: "Inventory Value",
         value: `₹${products.reduce(
-          (acc, p) => acc + Number(p.price?.sale || 0),
+          (acc, p, index) => acc + (p?.variants?.reduce((a, v) => a + (v.sale * v.quantity), 0) || 0),
           0
         )}`,
         icon: TrendingUp,
@@ -71,33 +73,99 @@ const Products = () => {
     setModalOpen(true);
   };
 
-  const handleDelete = (index) => {
+  const handleDelete = async (productId, index) => {
     if (window.confirm("Delete this product permanently?")) {
-      setProducts(products.filter((_, i) => i !== index));
+      const apiResponse = await axiosDeleteService(`/admin/product/harddelete?productId=${productId}`);
+      if (!apiResponse.ok) {
+        console.log(apiResponse)
+        alert(apiResponse.data.message || "Product not delete.")
+        return
+      }
+      else {
+        setProducts(products.filter((_, i) => i !== index));
+        setToast({
+          show: true,
+          message: "Product removed from inventory",
+          type: "success",
+        });
+      }
+    }
+  };
+
+  const handleSuccess = () => {
+    setModalOpen(false);
+    loadProducts();
+    setToast({ show: true, message: "Inventory updated successfully", type: "success" });
+  };
+
+
+  const loadProducts = async () => {
+    try {
+      const apiResponse = await axiosGetService("/admin/product/getall");
+
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message);
+        return
+      } else {
+
+        setProducts(apiResponse.data.data || []);
+      }
+    } catch (err) {
+      console.log(err);
       setToast({
         show: true,
-        message: "Product removed from inventory",
-        type: "success",
+        message: "Failed to load products",
+        type: "error",
       });
     }
   };
 
-  const handleSuccess = (productData) => {
-    if (selectedProduct) {
-      const idx = products.findIndex((p) => p === selectedProduct);
-      const newProducts = [...products];
-      newProducts[idx] = productData;
-      setProducts(newProducts);
-    } else {
-      setProducts([...products, productData]);
+  const handleSubmit = async () => {
+    const formData = new FormData();
+
+    // Basic Fields
+    formData.append("name", productData.name);
+    formData.append("slug", productData.slug);
+    formData.append("sku", productData.sku);
+    formData.append("category", productData.category);
+    formData.append("brand", productData.brand);
+    formData.append("productCollection", productData.productCollection);
+    formData.append("stockStatus", productData.stockStatus);
+
+    // Price Object
+    formData.append("price", JSON.stringify(productData.price));
+
+    // Variants Array
+    formData.append("variants", JSON.stringify(productData.variants));
+
+    // Attributes Object
+    formData.append("attributes", JSON.stringify(productData.attributes));
+
+    // Images (IMPORTANT)
+    if (productData.productImage && productData.productImage.length > 0) {
+      productData.productImage.forEach((file) => {
+        formData.append("productImage", file);
+      });
     }
-    setModalOpen(false);
-    setToast({
-      show: true,
-      message: "Inventory updated successfully",
-      type: "success",
-    });
+
+    const apiResponse = await axiosPostService(
+      "/admin/product/create",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message);
+      return;
+    }
+
+    onSuccess(apiResponse.data.data);
   };
+
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
 
   return (
     <div className="p-2 bg-[#FFF8E8] min-h-screen font-sans text-slate-900">
@@ -165,21 +233,19 @@ const Products = () => {
           <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
             <button
               onClick={() => setViewType("grid")}
-              className={`p-2 rounded-lg transition-all ${
-                viewType === "grid"
-                  ? "bg-white shadow-sm text-indigo-600"
-                  : "text-slate-500"
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewType === "grid"
+                ? "bg-white shadow-sm text-indigo-600"
+                : "text-slate-500"
+                }`}
             >
               <LayoutGrid size={20} />
             </button>
             <button
               onClick={() => setViewType("table")}
-              className={`p-2 rounded-lg transition-all ${
-                viewType === "table"
-                  ? "bg-white shadow-sm text-indigo-600"
-                  : "text-slate-500"
-              }`}
+              className={`p-2 rounded-lg transition-all ${viewType === "table"
+                ? "bg-white shadow-sm text-indigo-600"
+                : "text-slate-500"
+                }`}
             >
               <ListIcon size={20} />
             </button>
@@ -206,7 +272,7 @@ const Products = () => {
                 key={idx}
                 prod={prod}
                 onEdit={() => handleEdit(prod)}
-                onDelete={() => handleDelete(idx)}
+                onDelete={() => handleDelete(prod._id, idx)}
               />
             ))}
           </div>
@@ -266,11 +332,10 @@ const ProductCard = ({ prod, onEdit, onDelete }) => {
           </button>
         </div>
         <div
-          className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${
-            prod.stockStatus === "In Stock"
-              ? "bg-emerald-500 text-white"
-              : "bg-red-500 text-white"
-          }`}
+          className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest shadow-sm ${prod.stockStatus === "In Stock"
+            ? "bg-emerald-500 text-white"
+            : "bg-red-500 text-white"
+            }`}
         >
           {prod.stockStatus}
         </div>
@@ -353,11 +418,10 @@ const ProductTable = ({ products, onEdit, onDelete }) => (
             </td>
             <td className="px-6 py-4">
               <span
-                className={`px-3 py-1 rounded-full text-[10px] font-bold ${
-                  prod.stockStatus === "In Stock"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-red-100 text-red-700"
-                }`}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold ${prod.stockStatus === "In Stock"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-red-100 text-red-700"
+                  }`}
               >
                 {prod.stockStatus}
               </span>

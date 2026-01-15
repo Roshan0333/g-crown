@@ -36,7 +36,7 @@ const product_Schema = new Schema({
         gemstone: String,
         color: String,
         material: String,
-        weight: [Number],
+        weight: Number,
         brand: String
     },
     price: {
@@ -91,6 +91,7 @@ const product_Schema = new Schema({
     additionalInfo: String,
     status: {
         type: Boolean,
+        default: true
     },
     deleted: {
         type: Boolean,

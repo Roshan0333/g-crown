@@ -92,8 +92,7 @@ const AdminSignUp = () => {
           state: {
             path: "/admin/auth/signup", 
             client: formData,           
-            otp: apiResponse.data.data,
-            role: "admin"         
+            otp: apiResponse.data.data,        
           }
         });
 

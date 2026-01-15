@@ -12,7 +12,7 @@ export default function Verify() {
 
   let location = useLocation();
 
-  let { path, client, otp, role} = location.state || {};
+  let { path, client, otp} = location.state || {};
 
   const navigate = useNavigate();
   const inputsRef = useRef([]);
@@ -67,7 +67,6 @@ export default function Verify() {
         setIsLoading(false);
         // REDIRECT TO COMING SOON
         if(role === "admin"){
-          localStorage.setItem("role", 'admin')
           navigate("/admin");
         }
         else{navigate("/coming-soon");}
