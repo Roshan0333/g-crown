@@ -118,6 +118,12 @@ const UpdateProfile = async (req, res) => {
 
         let userDetail = await auth_Model.findById(_id);
 
+        
+
+        if(userDetail.contact){
+
+        }
+
         if (userDetail.profileImage) {
             await deleteFromCloudinary(userDetail.profileImage);
         }
@@ -151,11 +157,15 @@ const UpdateProfile = async (req, res) => {
             });
         }
 
-        await auth_Model.findByIdAndUpdate(
+        let userData = await auth_Model.findByIdAndUpdate(
             _id,
             { $set: updateData },
             { new: true }
         );
+
+        if(!userData){
+            return res.status(401).json(new ApiError(401, "Duplication Value"));
+        }
 
         return res.status(200).json(new ApiResponse(200, null, "Profile updated successfully"));
 
