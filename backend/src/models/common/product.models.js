@@ -30,6 +30,7 @@ const product_Schema = new Schema({
     },
     sku: {
         type: String,
+        unique: true
     },
     attributes: {
         purity: [String],

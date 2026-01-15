@@ -17,7 +17,7 @@ import { Package, CheckCircle, XCircle, Users, Home } from "lucide-react";
 import { useAdmin } from "../../context/AdminContext.jsx";
 
 const Dashboard = () => {
-  const { products, showrooms, customers } = useAdmin();
+  const { products = [], showrooms = [], customers = [] } = useAdmin();
 
   // ---------------- Stats ----------------
   const stats = {
@@ -192,13 +192,17 @@ const Dashboard = () => {
               <tbody>
                 {showrooms.map((s) => (
                   <tr
-                    key={s.id}
+                    key={s._id || s.id}
                     className="border-b hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-2">{s.name}</td>
                     <td className="px-4 py-2">{s.city}</td>
                     <td className="px-4 py-2">{s.state}</td>
-                    <td className="px-4 py-2">{s.timings}</td>
+                    <td className="px-4 py-2">
+                      {s.timings?.open && s.timings?.close
+                        ? `${s.timings.open} - ${s.timings.close}`
+                        : "-"}
+                    </td>
                     <td className="px-4 py-2">{s.phone}</td>
                   </tr>
                 ))}
