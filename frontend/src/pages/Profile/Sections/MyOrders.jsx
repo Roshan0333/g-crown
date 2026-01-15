@@ -123,14 +123,13 @@ const cancelOrder = async (id) => {
           {/* Products */}
           <div className="p-4">
           {order.products.map((item, i) => {
-  console.log(item.productImage);   // 👈 इथे log कर
 
   return (
     <div key={i} className="flex gap-4 border-b py-3">
       <img
         src={
           item.productImage && item.productImage[0]
-            ? `http://localhost:3000/uploads/${item.productImage[0]}`
+            ? item.productImage[0]
             : Earing
         }
         alt={item.name}
