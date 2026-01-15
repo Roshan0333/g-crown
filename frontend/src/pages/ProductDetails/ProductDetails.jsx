@@ -11,6 +11,7 @@ import shippingIcon from "../../assets/NewArrivalAssets/logos/la_shipping-fast.p
 import paymentIcon from "../../assets/NewArrivalAssets/logos/fluent_payment-32-regular.png";
 import supportIcon from "../../assets/NewArrivalAssets/logos/streamline-plump_customer-support-7.png";
 
+import axios from "axios";
 
 const ProductDetails = () => {
 
@@ -21,6 +22,14 @@ const ProductDetails = () => {
   const { product, allproducts } = location.state || {};
   const { addToCart } = useCart();
   const { toggleFavorite, isFavorite } = useFavorites();
+
+
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewTitle, setReviewTitle] = useState("");
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewerEmail, setReviewerEmail] = useState("");
+  const [reviews, setReviews] = useState([]);
 
 
   // useEffect(() => {
@@ -68,7 +77,7 @@ const ProductDetails = () => {
 
 
   const handleProductClick = (item) => {
-    navigate(`/product/${item.id}`, { state: { product: item } });
+    navigate(`/product/${item.id}`, { state: { product: item, allproducts } });
   };
 
   // UI Components for the Review Section
@@ -80,6 +89,66 @@ const ProductDetails = () => {
       </div>
     </div>
   );
+
+  
+  useEffect(() => {
+  if (!product?._id) return;
+
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(
+        `http://localhost:3000/gcrown/api/v1/customer/product/${product._id}/reviews`
+      );
+      setReviews(res.data || []);
+    } catch (err) {
+      console.error(err);
+      setReviews([]);
+    }
+  };
+
+  fetchReviews();
+}, [product?._id]);
+
+
+  const submitReview = async (e) => {
+  e.preventDefault();
+
+  if (!reviewRating || !reviewComment || !reviewerName || !reviewTitle) {
+    alert("Please fill all required fields");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      `http://localhost:3000/gcrown/api/v1/customer/product/review?productId=${product._id}`,
+      {
+        name: reviewerName,
+        email: reviewerEmail,
+        rating: reviewRating,
+        title: reviewTitle,
+        comment: reviewComment,
+      },
+      { withCredentials: true }
+    );
+
+    // Update local state to show new review immediately
+    setReviews((prev) => [res.data, ...prev]);
+
+    // Clear form
+    setReviewerName("");
+    setReviewerEmail("");
+    setReviewRating(0);
+    setReviewTitle("");
+    setReviewComment("");
+
+    alert("Review added successfully!");
+  } catch (err) {
+    console.error(err);
+    alert(err.response?.data?.message || "Failed to add review");
+  }
+};
+
+
 
   return (
     <div className="bg-[#FFF9E9] min-h-screen font-sans text-[#1C3A2C]">
@@ -340,50 +409,50 @@ const ProductDetails = () => {
 
                   {/* Reviews */}
                   <div className="space-y-10">
-                    {/* Kristin Watson */}
-                    <div className="border-b border-gray-100 pb-10">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                          <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=50" className="w-10 h-10 rounded-full object-cover" alt="user" />
-                          <div>
-                            <p className="font-bold text-sm">Kristin Watson</p>
-                            <p className="text-[10px] text-gray-500">[ Verified ]</p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-gray-400">10 Days ago</span>
-                      </div>
-                      <div className="flex text-[#CBA135] mb-4 gap-1 items-center">
-                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                        <span className="text-xs font-bold text-[#1C3A2C] ml-1">5.0</span>
-                      </div>
-                      <div className="flex gap-4 mb-4">
-                        <img src={product.image} className="w-24 h-24 object-cover rounded border border-gray-100" />
-                        <img src={product.image} className="w-24 h-24 object-cover rounded border border-gray-100" />
-                        <img src={product.image} className="w-24 h-24 object-cover rounded border border-gray-100" />
-                      </div>
-                    </div>
+{reviews.length === 0 && (
+  <p className="text-gray-400 text-sm">No reviews yet.</p>
+)}
 
-                    {/* Ananya Mehta */}
-                    <div className="border-b border-gray-100 pb-10">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex items-center gap-3">
-                          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=50" className="w-10 h-10 rounded-full object-cover" alt="user" />
-                          <div>
-                            <p className="font-bold text-sm">Ananya Mehta</p>
-                            <p className="text-[10px] text-gray-500">[ Verified ]</p>
-                          </div>
-                        </div>
-                        <span className="text-xs text-gray-400">1 Month ago</span>
-                      </div>
-                      <p className="text-gray-600 text-sm leading-relaxed italic mb-4">
-                        The Golden Elegance Bracelet truly lives up to its name. The gold finish is radiant, the design is simple yet luxurious, and it feels very comfortable to wear throughout the day. It adds a subtle touch of sophistication to every outfit and looks even better in person.
-                      </p>
-                      <div className="flex text-[#CBA135] gap-1 items-center">
-                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                        <span className="text-xs font-bold text-[#1C3A2C] ml-1">5.0</span>
-                      </div>
-                    </div>
-                  </div>
+{reviews.map((rev) => (
+  <div key={rev._id} className="border-b pb-6 mb-6">
+
+    <div className="flex justify-between items-center mb-2">
+      <div className="flex items-center gap-3">
+        <img
+          src={rev.media?.[0] || "https://via.placeholder.com/40"}
+          className="w-10 h-10 rounded-full"
+          alt="user"
+        />
+        <p className="font-semibold text-sm">
+          {rev.name || "Anonymous"}
+        </p>
+      </div>
+
+      <span className="text-xs text-gray-400">
+        {new Date(rev.createdAt).toLocaleDateString()}
+      </span>
+    </div>
+
+    <div className="flex items-center gap-1 text-[#CBA135] mb-2">
+      {[...Array(5)].map((_, i) => (
+        <span key={i}>
+          {i < Number(rev.rating || 0) ? "★" : "☆"}
+        </span>
+      ))}
+      <span className="text-xs text-gray-600 ml-1">
+        {Number(rev.rating || 0).toFixed(1)}
+      </span>
+    </div>
+
+    <p className="text-sm text-gray-700">
+      {rev.comment}
+    </p>
+
+  </div>
+))}
+
+</div>
+
                 </div>
 
                 {/* Add Your Review Form */}
@@ -391,33 +460,41 @@ const ProductDetails = () => {
                   <h3 className="text-xl font-serif text-[#1C3A2C] mb-1">Add your review</h3>
                   <p className="text-xs text-gray-500 mb-8">Let us know your thoughts.</p>
 
-                  <form className="space-y-6">
+                  <form className="space-y-6" onSubmit={submitReview}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <label className="text-xs font-bold">Name*</label>
-                        <input type="text" placeholder="Ex. John Kapoor" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
+                        <input type="text" value={reviewerName}
+                          onChange={(e) => setReviewerName(e.target.value)} placeholder="Ex. John Kapoor" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs font-bold">Email*</label>
-                        <input type="email" placeholder="example@gmail.com" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
+                        <input type="email" value={reviewerEmail}
+                          onChange={(e) => setReviewerEmail(e.target.value)} placeholder="example@gmail.com" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-xs font-bold">Your Rating*</label>
                       <div className="flex text-[#CBA135] gap-1">
-                        {[...Array(5)].map((_, i) => <Star key={i} size={18} fill="currentColor" className="cursor-pointer" />)}
+                        {[...Array(5)].map((_, i) => <Star key={i} size={18} 
+                        onClick={() => setReviewRating(i + 1)}
+      fill={i < reviewRating ? "currentColor" : "none"}
+
+className="cursor-pointer" />)}
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-xs font-bold">Add Review Title*</label>
-                      <input type="text" placeholder="Write Review Title here" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
+                      <input type="text" value={reviewTitle}
+                        onChange={(e) => setReviewTitle(e.target.value)} placeholder="Write Review Title here" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C]" />
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-xs font-bold">Add Detailed Review*</label>
-                      <textarea rows="4" placeholder="Write here" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C] resize-none"></textarea>
+                      <textarea rows="4" value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)} placeholder="Write here" className="w-full bg-white border border-gray-200 rounded px-4 py-3 text-sm focus:outline-none focus:border-[#1C3A2C] resize-none"></textarea>
                     </div>
 
                     <div className="space-y-2">
@@ -428,7 +505,7 @@ const ProductDetails = () => {
                       </div>
                     </div>
 
-                    <button type="submit" className="bg-[#1C3A2C] text-white px-10 py-3 text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors rounded">
+                    <button  type="submit" className="bg-[#1C3A2C] text-white px-10 py-3 text-xs font-bold uppercase tracking-widest hover:bg-black transition-colors rounded">
                       Submit
                     </button>
                   </form>

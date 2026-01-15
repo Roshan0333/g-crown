@@ -39,13 +39,13 @@ const addReview = async (req, res) => {
 
         product.reviews.push({
             customerId: _id,
-            name: `${userDetail.firstName} ${userDetail.lastName}`, // ✅ from DB
-            email: userDetail.email,                                // ✅ from DB
-            
-            comment,
-            rating,
-            media: userDetail.profileImage,
-            createdAt: new Date()
+    name: `${userDetail.firstName} ${userDetail.lastName}`,
+    email: userDetail.email,
+    title,             // ← add this
+    comment,
+    rating,
+    media: userDetail.profileImage,
+    createdAt: new Date()
         });
 
         product.rating.totalReviews = product.reviews.length;
@@ -62,6 +62,23 @@ const addReview = async (req, res) => {
     } catch (err) {
         return res.status(500).json(new ApiError(500, err.message));
     }
+};
+
+
+ const getProductReviews = async (req, res) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await productModel.findById(productId).select("reviews");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(product.reviews || []);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch reviews" });
+  }
 };
 
 // const addReview = async (req, res) => {
@@ -122,4 +139,4 @@ const addReview = async (req, res) => {
 // };
 
 
-export {getAllProducts, addReview };
+export {getAllProducts, addReview, getProductReviews };
