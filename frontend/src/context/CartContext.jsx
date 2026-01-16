@@ -13,8 +13,14 @@ export const CartProvider = ({ children }) => {
 
   const fetchCart = async () => {
     try {
-      const res = await axiosGetService("/customer/cart/all");
-      setCartItems(res.data?.data?.cart || []);
+      const apiResponse = await axiosGetService("/customer/cart/all");
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "Please Login")
+        return
+      }
+      else {
+        setCartItems(apiResponse.data?.data?.cart || []);
+      }
     } catch (error) {
       console.error("Cart fetch failed:", error);
     }
@@ -22,12 +28,19 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product, quantity = 1, purity = null) => {
     try {
-      await axiosPostService("/customer/cart/add", {
+      const apiResponse = await axiosPostService("/customer/cart/add", {
         productId: product._id,
         quantity,
         purity
       });
-      await fetchCart();
+
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "Please Login")
+        return
+      }
+      else {
+        await fetchCart();
+      }
     } catch (error) {
       console.error("Add to cart failed:", error);
     }

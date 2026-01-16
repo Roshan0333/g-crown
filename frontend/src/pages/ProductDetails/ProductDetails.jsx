@@ -77,21 +77,43 @@ const ProductDetails = () => {
 const handleAddToCart = () => {
   if (!product) return;
 
-  const purity = product.variants[selectPurity].purity; // correct
+  const selectedVariant = product.variants[selectPurity];
 
-  addToCart(product, quantity, purity);
+  if (!selectedVariant || selectedVariant.quantity <= 0) {
+    alert("Selected purity is out of stock");
+    return;
+  }
+
+  if (quantity > selectedVariant.quantity) {
+    alert(`Only ${selectedVariant.quantity} quantity available`);
+    return;
+  }
+
+  addToCart(product, quantity, selectedVariant.purity);
   setShowAddedToCart(true);
   setTimeout(() => setShowAddedToCart(false), 2000);
 };
 
+
 const handleBuyNow = () => {
   if (!product) return;
 
-  const purity = product.variants[selectPurity].purity;
+  const selectedVariant = product.variants[selectPurity];
 
-  addToCart(product, quantity, purity);
+  if (!selectedVariant || selectedVariant.quantity <= 0) {
+    alert("Selected purity is out of stock");
+    return;
+  }
+
+  if (quantity > selectedVariant.quantity) {
+    alert(`Only ${selectedVariant.quantity} quantity available`);
+    return;
+  }
+
+  addToCart(product, quantity, selectedVariant.purity);
   navigate("/cart");
 };
+
 
   if (!product) {
     return (
@@ -261,7 +283,7 @@ const handleBuyNow = () => {
                   {product.name}
                 </h1>
                 <span className="bg-[#a4dfc5] text-[#1C3A2C] px-4 py-2 text-xs rounded border-2 border-[#74B397] mt-5">
-                  In Stock
+                  {product.stockStatus}
                 </span>
               </div>
 
@@ -306,8 +328,8 @@ const handleBuyNow = () => {
                       setSelectPurity(index);
                     }}
                     className={`px-4 py-2 border text-sm transition-all ${index === selectPurity
-                        ? "border-[#1C3A2C] bg-[#1C3A2C] text-white"
-                        : "border-gray-300 hover:border-[#1C3A2C]"
+                      ? "border-[#1C3A2C] bg-[#1C3A2C] text-white"
+                      : "border-gray-300 hover:border-[#1C3A2C]"
                       }`}
                   >
                     {String(item.purity)}
