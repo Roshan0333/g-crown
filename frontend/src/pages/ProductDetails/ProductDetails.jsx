@@ -289,7 +289,7 @@ const handleBuyNow = () => {
 
               <div className="flex items-center gap-2 mt-2">
                 <div className="flex text-[#CBA135]">
-                  {[...Array(5)].map((_, i) => (
+                  {[...Array(Math.round(product.rating.avg))].map((_, i) => (
                     <Star key={i} size={16} fill="currentColor" />
                   ))}
                 </div>
@@ -310,8 +310,8 @@ const handleBuyNow = () => {
             </div>
 
             <p className="text-gray-600 leading-relaxed">
-              The {product.name} is a refined gold creation designed to add
-              effortless luxury and timeless charm to every moment.{" "}
+              {/* The {product.name} is a refined gold creation designed to add
+              effortless luxury and timeless charm to every moment.{" "} */}
               {product.additionalInfo}
             </p>
 
@@ -496,7 +496,7 @@ const handleBuyNow = () => {
                       </td>
                       <td className="py-4 px-6 text-gray-600">
                         {product.variants.map((item, i) => (
-                          <span key={i}>{String(item.weight)} </span>
+                          <span key={i}>{`${String(item.weight)}g`} </span>
                         ))}
                       </td>
                     </tr>
@@ -518,14 +518,14 @@ const handleBuyNow = () => {
                 <div className="flex flex-col md:flex-row gap-8 items-start border-b border-gray-100 pb-10">
                   <div className="text-center md:text-left md:border-r border-gray-200 pr-12">
                     <div className="text-5xl font-bold text-[#1C3A2C]">
-                      4.9
+                      {product.rating.avg}
                       <span className="text-lg font-normal text-gray-400">
                         {" "}
                         out of 5
                       </span>
                     </div>
                     <div className="flex text-[#CBA135] my-2 justify-center md:justify-start">
-                      {[...Array(5)].map((_, i) => (
+                      {[...Array(Math.round(product.rating.avg))].map((_, i) => (
                         <Star key={i} size={20} fill="currentColor" />
                       ))}
                     </div>
