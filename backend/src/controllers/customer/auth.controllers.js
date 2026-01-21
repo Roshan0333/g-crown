@@ -4,6 +4,7 @@ import { ApiResponse } from "../../utils/api-response.js";
 import { encryptPasswordMethod, decryptPasswordMethod } from "../../utils/passwordEncrypt&passwordDecrypt.js";
 import cookiesForUser from "../../utils/cookiesForUser.js";
 import { cloudinary, deleteFromCloudinary } from "../../configs/cloudinary.js";
+import {OAuth2Client} from "google-auth-library"
 
 const Signup = async (req, res) => {
     try {
@@ -197,4 +198,42 @@ const Signout = async (req, res) => {
     }
 }
 
-export { Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile };
+const GoogleAuth = async (req, res) => {
+    try {
+        const { token } = req.body;
+
+        const client = new OAuth2Client(process.env.Google_ClientId)
+
+        const ticket = await client.verifyIdToken({
+            idToken: token,
+            audience: process.env.Google_ClientId
+        });
+
+        const payload = ticket.getPayload();
+        const { email, name, picture } = payload;
+
+        let nameArray = name.split(" ");
+
+        let user = await auth_Model.findOne({ email });
+
+        if (!user) {
+            user = auth_Model({
+                email: email,
+                firstName: nameArray[0],
+                lastName: (!nameArray[1]) ? "" : nameArray[1],
+                profileImage: picture
+            })
+
+            await user.save();
+        }
+
+        await cookiesForUser(res, user);
+
+        return res.status(200).json(new ApiResponse(200, {userEmail: email}, "Successful"));
+    }
+    catch (err) {
+        return res.status(500).json(new ApiError(500, err.message, [{ message: err.message, name: err.name }]));
+    }
+}
+
+export { Signup, Login, ForgotPassword, changePassword, Signout, UpdateProfile, myProfile, GoogleAuth };

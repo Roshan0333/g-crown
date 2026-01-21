@@ -5,6 +5,7 @@ import { Eye, EyeOff, Loader2, ArrowLeft, ShieldCheck, Mail, Lock } from "lucide
 import modelImage from "../../assets/authPages/signInModel.png";
 import logo from "../../assets/authPages/logo.png";
 import { axiosPostService, axiosPutService } from "../../services/axios";
+import { GoogleLogin } from "@react-oauth/google";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -24,7 +25,29 @@ const SignIn = () => {
   const [otp, setOtp] = useState();
   const [sendOtp, setSendOtp] = useState()
 
-  // --- Handlers ---
+  const handleGoogleLogin = async (cred) => {
+    try {
+      const token = cred.credential;
+
+      const apiResponse = await axiosPostService("/customer/auth/googleLogin", { token });
+
+      console.log(apiResponse);
+      if (!apiResponse.ok) {
+        alert(apiResponse.data.message || "SignIn Failed");
+      }
+      else {
+        navigate("/", {
+          state: { welcomeMessage: true, userName: apiResponse.data.userName, isReturningUser: true }
+        });
+      }
+
+    } catch (error) {
+      console.error(
+        "❌ Google login failed:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -97,7 +120,7 @@ const SignIn = () => {
 
         const apiResponse = await axiosPutService(
           "/customer/auth/forgetPassword",
-          {email, password}
+          { email, password }
         )
 
         if (!apiResponse.ok) {
@@ -125,16 +148,16 @@ const SignIn = () => {
 
   const resendOtp = async () => {
     const apiResponse = await axiosPostService(
-        "/customer/auth/forgetPasswordOtp",
-        { email }
-      )
-      if (!apiResponse.ok) {
-        alert(apiResponse.data.message || "Otp Sending Failed");
-        return
-      }
-      else {
-        setSendOtp(apiResponse.data.data);
-      }
+      "/customer/auth/forgetPasswordOtp",
+      { email }
+    )
+    if (!apiResponse.ok) {
+      alert(apiResponse.data.message || "Otp Sending Failed");
+      return
+    }
+    else {
+      setSendOtp(apiResponse.data.data);
+    }
   }
 
   return (
@@ -249,9 +272,13 @@ const SignIn = () => {
                   <span className="relative bg-[#FDF9F0] px-4 text-[12px] font-medium text-gray-400">or Sign in with</span>
                 </div>
 
-                <motion.button whileTap={{ scale: 0.98 }} type="button" className="flex w-full items-center justify-center gap-4 border border-gray-200 bg-white py-3.5 text-[14px] font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition-all">
-                  <GoogleIcon /> Sign In With Google
-                </motion.button>
+                {/* <motion.button whileTap={{ scale: 0.98 }} type="button" className="flex w-full items-center justify-center gap-4 border border-gray-200 bg-white py-3.5 text-[14px] font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition-all"> */}
+                  <GoogleLogin
+                    onSuccess={handleGoogleLogin}
+                    onError={() => console.log("❌ Google Login Failed")}
+                   className="flex w-full items-center justify-center gap-4 border border-gray-200 bg-white py-3.5 text-[14px] font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition-all" 
+                  />
+                {/* </motion.button> */}
 
                 <motion.button whileTap={{ scale: 0.98 }} onClick={() => navigate("/admin/login")} type="button" className="w-full border border-[#1E3A2F] py-3.5 text-[14px] font-bold text-[#1E3A2F] hover:bg-[#1E3A2F] hover:text-white transition-all mt-2">
                   ADMIN SIGN IN

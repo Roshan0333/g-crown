@@ -15,7 +15,7 @@ export const CartProvider = ({ children }) => {
     try {
       const apiResponse = await axiosGetService("/customer/cart/all");
       if (!apiResponse.ok) {
-        alert(apiResponse.data.message || "Please Login")
+        console.log(apiResponse.data.message || "Please Login")
         return
       }
       else {

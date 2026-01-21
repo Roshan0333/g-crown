@@ -14,7 +14,7 @@ const Collections = () => {
       const res = await axiosGetService("/customer/product/all");
 
       if (!res.ok) {
-        alert(res.data.message || "Failed to load products");
+        console.log(res.data.message || "Failed to load products")
         return;
       }
 

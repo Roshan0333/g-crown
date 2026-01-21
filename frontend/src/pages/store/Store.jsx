@@ -188,7 +188,7 @@ export default function FindStore() {
                   </button>
 
                   <button className="flex-1 border border-[#08221B] py-2.5 text-xs font-bold text-[#08221B] uppercase flex items-center justify-center gap-2 transition hover:bg-[#08221B] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#08221B]"
-                    onClick={() => window.open(item.navigateURL, "_blank")}>
+                    onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.name + " " + (item.city || ""))}`)}>
                     <MapPin size={14} />
                     Navigate
                   </button>
