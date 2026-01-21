@@ -98,16 +98,8 @@ const AdminLayout = () => {
       </nav>
 
       {/* Footer Section */}
-      <div className={`p-4 border-t bg-[#FFF8E8] flex-shrink-0 ${dark ? "border-slate-800" : "border-slate-200"}`}>
-        {/* Dark Mode Toggle */}
-        <button
-          onClick={() => setDark(!dark)}
-          className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors mb-4
-          ${dark ? "hover:bg-slate-800 text-slate-300" : "hover:bg-slate-100 text-slate-600"}`}
-        >
-          {dark ? <Sun size={18} /> : <Moon size={18} />}
-          {!collapsed && <span>{dark ? "Light Mode" : "Dark Mode"}</span>}
-        </button>
+      <div className={`p-4 border-t bg-[#FFF8E8] flex-shrink-0 `}>
+       
 
         {/* User Info */}
         <div className="flex items-center gap-3 p-1 ">

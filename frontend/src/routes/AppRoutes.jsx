@@ -35,6 +35,7 @@ import ContactUs from "../pages/contactus/ContactUs";
 import PrivacyPolicy from "../pages/legal/Privacy";
 import Terms from "../pages/terms/Terms";
 import Faq from "../pages/faqs/Faqs";
+import SearchProducts from "../pages/searchProducts/SearchProducts";
 
 // Admin Pages
 import AdminLogin from "../pages/auth/AdminLogin";
@@ -98,6 +99,7 @@ export default function AppRoutes() {
         <Route path="/order-cancel" element={<OrderCancel />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/searchProduct" element={<SearchProducts/>}/>
 
         {/* ================= ADMIN ROUTES ================= */}
         <Route path="/admin/login" element={<AdminLogin />} />

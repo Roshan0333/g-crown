@@ -16,6 +16,7 @@ import { useFavorites } from "../context/FavoritesContext";
 export default function Navbar() {
   const [visible, setVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(""); // NEW: search state
   const lastScrollY = useRef(0);
   const navigate = useNavigate();
   const location = useLocation(); // Useful if you need to check paths manually
@@ -46,6 +47,13 @@ export default function Navbar() {
   // Helper to check if a link is active for manual logic (like mobile icons)
   const isActive = (path) => location.pathname === path;
 
+  // NEW: handle search submit
+  const handleSearch = () => {
+    if (searchQuery.trim() === "") return;
+    navigate(`/searchproduct?q=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchQuery(""); // optional: clear search bar after submit
+  };
+
   return (
     <>
       {/* NAVBAR */}
@@ -67,11 +75,18 @@ export default function Navbar() {
 
             {/* DESKTOP SEARCH */}
             <div className="hidden lg:flex w-[320px] xl:w-105 items-center rounded-full bg-[#FBF6EA] px-4 py-2">
-              <Search size={18} className="text-gray-500 shrink-0" />
               <input
                 type="text"
                 placeholder="Search"
-                className="ml-3 w-full bg-transparent text-sm text-gray-500 outline-none placeholder:text-lg placeholder:text-center"
+                value={searchQuery} // NEW
+                onChange={(e) => setSearchQuery(e.target.value)} // NEW
+                onKeyDown={(e) => e.key === "Enter" && handleSearch()} // NEW: enter key
+                className=" w-full bg-transparent text-sm text-[#001302] outline-none placeholder:text-[#00140a] placeholder:text-lg placeholder:text-center"
+              />
+              <Search
+                size={18}
+                className="text-[#00140a] shrink-0 mr-5"
+                onClick={handleSearch} // UPDATED: navigate with query
               />
             </div>
 
@@ -87,7 +102,7 @@ export default function Navbar() {
 
             {/* ICONS (Mobile & Desktop shared logic) */}
             <div className="flex items-center gap-2 lg:gap-3">
-               <IconButton
+              <IconButton
                 Icon={Heart}
                 active={isActive("/favorites")}
                 onClick={() => { navigate("/favorites"); window.scrollTo(0,0); }}

@@ -175,15 +175,15 @@ const Products = () => {
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-[#08221B]"
               size={18}
             />
             <input
               type="text"
-              placeholder="Search by name, SKU or category..."
+              placeholder="Search by  category..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border-transparent focus:bg-white focus:border-indigo-500 rounded-xl outline-none transition-all text-sm font-medium"
+              className="w-full pl-12 pr-4 py-3 bg-slate-100 border-transparent text-[#08221B] placeholder:text-[#08221B] focus:border-indigo-500 rounded-xl outline-none transition-all text-sm font-medium"
             />
           </div>
 
@@ -191,7 +191,7 @@ const Products = () => {
             <button
               onClick={() => setViewType("grid")}
               className={`p-2 rounded-lg transition-all ${viewType === "grid"
-                ? "bg-white shadow-sm text-indigo-600"
+                ? "bg-white shadow-sm text-[#08221B]"
                 : "text-slate-500"
                 }`}
             >
@@ -200,7 +200,7 @@ const Products = () => {
             <button
               onClick={() => setViewType("table")}
               className={`p-2 rounded-lg transition-all ${viewType === "table"
-                ? "bg-white shadow-sm text-indigo-600"
+                ? "bg-white shadow-sm text-[#08221B]"
                 : "text-slate-500"
                 }`}
             >
