@@ -27,7 +27,11 @@ const addReview = async (req, res) => {
         const { productId } = req.query;
         const { _id } = req.user;
 
-        const { title, comment, rating } = req.body;
+        let { title, comment, rating } = req.body;
+
+        if(!title){
+            title = comment;
+        }
 
         const product = await productModel.findById(productId);
         if (!product) {
@@ -40,7 +44,7 @@ const addReview = async (req, res) => {
             customerId: _id,
             name: `${userDetail.firstName} ${userDetail.lastName}`,
             email: userDetail.email,
-            title,             // ← add this
+            title,            
             comment,
             rating,
             media: userDetail.profileImage,

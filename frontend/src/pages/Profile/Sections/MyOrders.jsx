@@ -37,22 +37,20 @@ const MyOrders = () => {
 
     return () => clearInterval(timer);
   }, []);
-
+  
 
   const submitReview = async () => {
 
     try {
-
-
-      await axios.post(`http://localhost:3000/gcrown/api/v1/customer/product/review?productId=${selectedOrderId}`, {
-        orderId: selectedOrderId,
-        comment,
-        rating
-      },
-        {
-          withCredentials: true
-        }
-      );
+      await axios.post(
+              `http://localhost:3000/gcrown/api/v1/customer/product/review?productId=${selectedOrderId}`,
+              {
+                rating,
+                title:"",
+                comment,
+              },
+              { withCredentials: true }
+            );
 
       alert("Review added Successfully");
       setShowReview(false);
@@ -166,8 +164,8 @@ const MyOrders = () => {
           <div className="p-4 flex justify-between items-center bg-gray-50">
             <div>
               <span className={`px-3 py-1 text-xs border ${order.orderStatus
-                  ? "bg-orange-100 text-orange-600"
-                  : "bg-green-100 text-green-600"
+                ? "bg-orange-100 text-orange-600"
+                : "bg-green-100 text-green-600"
                 }`}>
                 {order.orderStatus}
 
@@ -209,8 +207,7 @@ const MyOrders = () => {
                     type="button"
                     onClick={() => {
                       setShowReview(true);
-                      setSelectedOrderId(order.products[0].productId);   // 🔴 हा line missing होता
-
+                      setSelectedOrderId(order.products[0].productId);
                     }}
                     className="bg-[#1B3022] text-white px-4 py-2 text-sm"
                   >
