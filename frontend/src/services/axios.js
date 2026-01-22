@@ -85,3 +85,25 @@ export const axiosDeleteService = async (path) => {
         }
     }
 }
+
+/* ===========================
+   SEARCH PRODUCTS API
+=========================== */
+export const searchProductsService = async (query) => {
+    try {
+        const response = await axios.get(
+            `${API_URL}/common/search?q=${query}`,
+            { withCredentials: true }
+        );
+
+        return { ok: true, fetchMessage: true, data: response.data };
+    }
+    catch (err) {
+        if (err.response) {
+            return { ok: false, fetchMessage: true, data: err.response.data };
+        }
+        else {
+            return { ok: false, fetchMessage: false, data: err.message }
+        }
+    }
+};

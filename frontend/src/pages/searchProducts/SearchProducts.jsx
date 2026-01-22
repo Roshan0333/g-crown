@@ -16,8 +16,9 @@ const SearchProducts = () => {
     (async () => {
       setLoading(true);
 
+      // 🔽 ONLY CHANGE: correct search API path
       const res = await axiosGetService(
-        `/customer/product/search?q=${query}`
+        `/common/search?q=${query}`
       );
 
       if (!res.ok) {

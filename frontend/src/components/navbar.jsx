@@ -50,7 +50,7 @@ export default function Navbar() {
   // NEW: handle search submit
   const handleSearch = () => {
     if (searchQuery.trim() === "") return;
-    navigate(`/searchproduct?q=${encodeURIComponent(searchQuery.trim())}`);
+    navigate(`/searchProduct?q=${encodeURIComponent(searchQuery.trim())}`);
     setSearchQuery(""); // optional: clear search bar after submit
   };
 
