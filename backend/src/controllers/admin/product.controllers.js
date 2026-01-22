@@ -5,7 +5,7 @@ import { ApiResponse } from "../../utils/api-response.js";
 
 const uploadNewProduct = async (req, res) => {
     try {
-        const {
+        let {
             name,
             slug,
             sku,
