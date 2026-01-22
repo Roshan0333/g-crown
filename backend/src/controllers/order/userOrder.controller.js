@@ -1,4 +1,4 @@
-import userOrderModel from "../../models/order/userOrder.model.js";
+import Order from "../../models/order/Order.js";
 
 const ORDER_STEPS = ['Order Placed', 'Accepted', 'In Progress', 'On The Way', 'Delivered'];
 
@@ -7,7 +7,7 @@ export const getOrderById = async (req, res) => {
         const { orderId } = req.params;
         console.log(orderId)
 
-        const order = await userOrderModel.findOne({ orderId: { $regex: `^${orderId}$`, $options: 'i' } });
+        const order = await Order.findOne({ displayOrderId: orderId });
 
         if (!order) {
             return res.status(404).json({ message: "Order not found" });
@@ -41,13 +41,11 @@ export const getOrderById = async (req, res) => {
   return { label, done: stepDone, date, time };
 });
 
-
-
         res.json({
-            orderId: order.orderId,
-            status: order.status,
-            createdAt: order.createdAt,
-            items: order.items,
+            orderId: order.displayOrderId,
+            status: order.orderStatus,
+            createdAt: order.date,
+            products: order.products,
             steps,
         });
     } catch (err) {

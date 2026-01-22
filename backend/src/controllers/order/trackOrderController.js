@@ -15,6 +15,7 @@ export const trackOrder = async (req, res) => {
     res.status(200).json({
       orderId: order.displayOrderId,
       createdAt: order.date,
+      total: order.total,
       orderStatus: order.orderStatus,
       steps,
       items: order.products.map(p => ({

@@ -126,6 +126,7 @@ export default function TrackOrder() {
   );
 }
 
+
 /* ================= ORDER STATUS ================= */
 
 function OrderStatus({ orderData, displayOrderId }) {
@@ -140,42 +141,55 @@ function OrderStatus({ orderData, displayOrderId }) {
         <div
           className="relative flex flex-wrap sm:flex-nowrap justify-between gap-4 sm:gap-6"
           role="progressbar"
-          aria-valuemin={0}
-          aria-valuemax={orderData.steps.length}
         >
           {orderData.steps.map((step, i) => {
             const isCompleted = step.done;
             const isLast = i === orderData.steps.length - 1;
 
+            // --- DATE LOGIC ---
+            // If completed, use the actual date. 
+            // If not completed, calculate an estimated date based on index.
+            let displayDate = "";
+            if (isCompleted) {
+              displayDate = formatDate(step.date);
+            } else {
+              // Add (i * 2) days to the order creation date for estimation
+              const estDate = new Date(orderData.createdAt);
+              estDate.setDate(estDate.getDate() + (i * 2)); 
+              displayDate = `Expected ${formatDate(estDate)}`;
+            }
+
             return (
               <div
                 key={i}
                 className="relative flex-1 min-w-[120px] sm:min-w-[140px] text-center"
-                aria-current={isCompleted ? "step" : undefined}
               >
                 {/* CONNECTOR */}
                 {!isLast && (
                   <span
-                    className={`hidden sm:block absolute top-[14px] left-[60%] h-[2px] w-[80%] ${isCompleted ? "bg-[#1F3B2D]" : "bg-[#D6D6D6]"
-                      }`}
+                    className={`hidden sm:block absolute top-[14px] left-[60%] h-[2px] w-[80%] ${
+                      isCompleted ? "bg-[#1F3B2D]" : "bg-[#D6D6D6]"
+                    }`}
                   />
                 )}
 
                 {/* STEP DOT */}
                 <div
-                  className={`relative z-10 mx-auto mb-3 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md border transition-all ${isCompleted
-                    ? "bg-[#C9A24D] border-[#C9A24D] shadow-md"
-                    : "bg-[#E0E0E0] border-[#CFC7B5]"
-                    }`}
+                  className={`relative z-10 mx-auto mb-3 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md border transition-all ${
+                    isCompleted
+                      ? "bg-[#C9A24D] border-[#C9A24D] shadow-md"
+                      : "bg-[#E0E0E0] border-[#CFC7B5]"
+                  }`}
                 >
                   {isCompleted && <Check size={16} className="text-white" />}
                 </div>
 
-                <p className="text-xs sm:text-sm font-medium">{step.label}</p>
-                <p className="mt-1 text-xs text-gray-600">{formatDate(step.date)}</p>
-                {step.time && (
-                  <p className="text-xs text-gray-500">{step.time}</p>
-                )}
+                <p className={`text-xs sm:text-sm font-medium ${!isCompleted ? "text-gray-400" : ""}`}>
+                  {step.label}
+                </p>
+                <p className="mt-1 text-[10px] sm:text-xs text-gray-500">
+                  {displayDate}
+                </p>
               </div>
             );
           })}
@@ -200,12 +214,12 @@ function OrderInfo({ orderData }) {
           value={formatDate(
             new Date(new Date(orderData.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000)
           )} />
-        <InfoRow label="Payment Method" value="Paypal" />
+        <InfoRow label="Payment Method" value={orderData.method || "Razorpay"} />
       </div>
 
       <div className="flex justify-between bg-[#0F241A] px-4 sm:px-6 py-4 font-medium text-white">
         <span>Total :</span>
-        <span>₹ 2,15,000</span>
+        <span>₹ {orderData.total ? orderData.total.toLocaleString('en-IN') : "0"}</span>
       </div>
     </section>
   );

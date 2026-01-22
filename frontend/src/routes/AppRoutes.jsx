@@ -23,7 +23,7 @@ import AboutUs from "../pages/aboutUs/AboutUs";
 import ProductDetails from "../pages/ProductDetails/ProductDetails";
 import Profile from "../pages/Profile/Profile";
 
-import TrackingOrder from "../pages/trackOrder/TrackOrder";
+import TrackOrder from "../pages/trackOrder/TrackOrder";
 import TrackingForm from "../pages/trackOrder/TrackingForm";
 import Cart from "../pages/cart/Cart";
 import Favorites from "../pages/favorites/Favorites";
@@ -90,7 +90,7 @@ export default function AppRoutes() {
         <Route path="/faqs" element={<Faq />} />
 
         <Route path="/track-order" element={<TrackingForm />} />
-        <Route path="/track-order/:orderId" element={<TrackingOrder />} />
+        <Route path="/track-order/:orderId" element={<TrackOrder />} />
 
        {/* <Route path="/track-id" element={<TrackingOrder />} /> */}
 

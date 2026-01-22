@@ -22,7 +22,7 @@ const MyOrders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await axios.get("http://localhost:3000/api/orders", { withCredentials: true });
+        const res = await axios.get("http://localhost:3000/gcrown/api/v1/customer/order", { withCredentials: true });
         setOrderList(res.data);
       } catch (err) {
         console.log("MyOrders Fetch Error:", err);
@@ -191,7 +191,7 @@ const MyOrders = () => {
 
                 <>
                   <button
-                    onClick={() => navigate("/track-order", { state: { orderId: order.displayOrderId } })}
+                    onClick={() => navigate(`/track-order/${order.displayOrderId}`)}
                     className="bg-[#1B3022] text-white px-4 py-2 text-sm"
                   >
                     Track Order

@@ -149,7 +149,7 @@ const Orders = () => {
             ) : (
               filteredOrders.map((order) => (
                 <tr
-                  key={order.id}
+                  key={order._id}
                   className="hover:bg-gray-50 transition-colors"
                 >
                   <td className="px-6 py-4">{order.displayOrderId}</td>

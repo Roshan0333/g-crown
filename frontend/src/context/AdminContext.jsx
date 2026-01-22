@@ -14,7 +14,8 @@ export const AdminProvider = ({ children }) => {
 
   const fetchOrders = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/api/admin/orders");
+      const res = await axios.get("http://localhost:3000/gcrown/api/v1/admin/order");
+      console.log("Admin Orders Received:", res.data); 
       setOrders(res.data);
     } catch (err) {
       console.log("Orders Fetch Error:", err);
@@ -25,7 +26,7 @@ export const AdminProvider = ({ children }) => {
   const updateOrderStatus = async (id, status) => {
   try {
     const res = await axios.put(
-      `http://localhost:3000/api/admin/orders/${id}/status`,
+      `http://localhost:3000/gcrown/api/v1/admin/order/${id}/status`,
       { status }
     );
 

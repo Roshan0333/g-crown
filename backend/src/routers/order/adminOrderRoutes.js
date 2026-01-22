@@ -3,7 +3,7 @@ import { getAllOrders, updateOrderStatus } from "../../controllers/order/adminOr
 
 const router = express.Router();
 
-router.get("/orders", getAllOrders);
-router.put("/orders/:id/status", updateOrderStatus);
+router.get("/", getAllOrders);
+router.put("/:id/status", updateOrderStatus);
 
 export default router;

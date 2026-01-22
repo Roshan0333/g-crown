@@ -15,6 +15,7 @@ import isAuth from "../../middlewares/requiredLogin.middleware.js"
 const router = express.Router();
 
 console.log("enter")
+router.get("/track-order/:displayOrderId", trackOrder);
 
 router.get("/all", getAllOrders)
 router.get("/", isAuth, getOrders);
@@ -23,6 +24,5 @@ router.put("/:id/status", updateOrderStatus);
 router.get("/:id/invoice", generateInvoice);
 router.post("/save", isAuth, saveOrder);
 router.put("/cancel/:id", cancelOrder);
-router.get("/track/:displayOrderId", trackOrder);
 
 export default router;

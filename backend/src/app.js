@@ -14,6 +14,7 @@ import adminStoreRoutes from "./routers/admin/store.route.js";
 
 import userOrderRoutes from "./routers/order/userOrder.route.js";
 import orderRoutes from "./routers/order/order.routes.js"
+import adminOrderRoutes from "./routers/order/adminOrderRoutes.js"
 
 /* ===========================
    SEARCH API (NEW IMPORT)
@@ -46,9 +47,9 @@ app.use("/gcrown/api/v1/customer/cart", cartRoutes);
 app.use("/gcrown/api/v1/admin/auth", adminAuthRoutes);
 app.use("/gcrown/api/v1/admin/product", adminProductRoutes);
 app.use("/gcrown/api/v1/admin/store", adminStoreRoutes);
+app.use("/gcrown/api/v1/admin/order", adminOrderRoutes)
 
-app.use("/gcrown/api/v1/customer/order", userOrderRoutes);
-app.use("/gcrown/api/v1/admin/order", orderRoutes)
+app.use("/gcrown/api/v1/customer/order", orderRoutes);
 
 /* ===========================
    SEARCH API ROUTE (NEW)
