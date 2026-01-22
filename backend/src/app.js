@@ -13,6 +13,7 @@ import adminProductRoutes from "./routers/admin/product.route.js";
 import adminStoreRoutes from "./routers/admin/store.route.js";
 
 import userOrderRoutes from "./routers/order/userOrder.route.js";
+import orderRoutes from "./routers/order/order.routes.js"
 
 /* ===========================
    SEARCH API (NEW IMPORT)
@@ -47,6 +48,7 @@ app.use("/gcrown/api/v1/admin/product", adminProductRoutes);
 app.use("/gcrown/api/v1/admin/store", adminStoreRoutes);
 
 app.use("/gcrown/api/v1/customer/order", userOrderRoutes);
+app.use("/gcrown/api/v1/admin/order", orderRoutes)
 
 /* ===========================
    SEARCH API ROUTE (NEW)

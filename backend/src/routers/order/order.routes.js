@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  getAllOrders,
   getOrders,
   createOrder,
   updateOrderStatus,
@@ -13,6 +14,9 @@ import isAuth from "../../middlewares/requiredLogin.middleware.js"
 
 const router = express.Router();
 
+console.log("enter")
+
+router.get("/all", getAllOrders)
 router.get("/", isAuth, getOrders);
 router.post("/create",isAuth, createOrder);
 router.put("/:id/status", updateOrderStatus);

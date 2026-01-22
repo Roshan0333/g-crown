@@ -10,6 +10,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Get My Orders
+
+export const getAllOrders = async (req, res) => {
+  const orders = await Order.find({});
+  res.json(orders);
+};
 export const getOrders = async (req, res) => {
   const orders = await Order.find({userId: req.user._id});
   res.json(orders);

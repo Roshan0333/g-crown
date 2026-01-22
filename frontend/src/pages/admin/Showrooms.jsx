@@ -30,7 +30,6 @@ const Showrooms = () => {
   /** Fetch Showrooms */
   const fetchShowrooms = async () => {
     const apiResponse = await axiosGetService("/admin/store");
-    console.log("GET SHOWROOMS:", apiResponse);
 
     if (!apiResponse.ok) {
       showToast(apiResponse.data.message || "Failed to fetch showrooms", "error");

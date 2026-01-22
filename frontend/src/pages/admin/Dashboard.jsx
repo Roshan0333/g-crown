@@ -14,10 +14,14 @@ import {
 } from "recharts";
 import StatCard from "../../components/admin/StatCard";
 import { Package, CheckCircle, XCircle, Users, Home } from "lucide-react";
-import { useAdmin } from "../../context/AdminContext.jsx";
+// import { useAdmin } from "../../context/AdminContext.jsx";
+import { axiosGetService } from "../../services/axios";
 
 const Dashboard = () => {
-  const { products = [], showrooms = [], customers = [] } = useAdmin();
+
+  const [products, serProducts] = useState([]);
+  const [showrooms, setShowroom] = useState([]);
+  const [customers, setCustomers] = useState([]);
 
   // ---------------- Stats ----------------
   const stats = {
@@ -44,6 +48,39 @@ const Dashboard = () => {
   // Vibrant colors
   const PIE_COLORS = ["#4F46E5", "#6366F1"];
   const BAR_COLOR = "#4F46E5";
+
+
+  useState(() => {
+    ; (async () => {
+      const productApiResponse = await axiosGetService("/customer/product/all", {withCredentials: true});
+      const storeApiResponse = await axiosGetService("/admin/store",  {withCredentials: true});
+      const customersApiResponse = await axiosGetService("/admin/order/all", { withCredentials: true });
+
+
+      if (!productApiResponse.ok) {
+        console.log(productApiResponse.data.message || "Failed to load products")
+        return;
+      }
+
+      if(!storeApiResponse.ok){
+        console.log(storeApiResponse.data.message || "Failed to load Store")
+        return;
+      }
+
+      setShowroom(storeApiResponse.data.data);
+      setCustomers(customersApiResponse.data)
+
+      // backend format: res.data.data = Array(products)
+      const productsArray = productApiResponse.data.data;
+
+      if (Array.isArray(productsArray)) {
+        serProducts(productsArray);
+      } else {
+        serProducts([]);
+      }
+    })();
+  })
+
 
   return (
     <div className=" min-h-screen bg-[#FFF8E8] space-y-6">
@@ -139,8 +176,8 @@ const Dashboard = () => {
 
       {/* Tables */}
       <div className="space-y-6">
-        
-        
+
+
       </div>
     </div>
   );

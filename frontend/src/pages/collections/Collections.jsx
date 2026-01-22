@@ -10,7 +10,7 @@ const Collections = () => {
   const [allProducts, setAllProducts] = useState([]);
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       const res = await axiosGetService("/customer/product/all");
 
       if (!res.ok) {

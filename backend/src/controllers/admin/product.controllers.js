@@ -49,6 +49,8 @@ const uploadNewProduct = async (req, res) => {
         const attributes = req.body.attributes ? JSON.parse(req.body.attributes) : null;
         const variants = req.body.variants ? JSON.parse(req.body.variants) : [];
 
+        name = name.toLowerCase();
+
         const newProduct = productModel({
             name,
             slug,
