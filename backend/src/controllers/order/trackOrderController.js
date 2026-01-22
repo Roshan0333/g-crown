@@ -12,7 +12,7 @@ export const trackOrder = async (req, res) => {
       { label: "Delivered", done: order.orderStatus === "Delivered", date: order.date }
     ];
 
-    res.json({
+    res.status(200).json({
       orderId: order.displayOrderId,
       createdAt: order.date,
       orderStatus: order.orderStatus,

@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import axios from 'axios';
+import { useParams } from "react-router-dom";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Check,
@@ -70,7 +71,9 @@ const products = [
 export default function TrackOrder() {
   const location = useLocation();
   const navigate = useNavigate();
-  const orderId = location.state?.orderId || "GCROWN12345";
+  // const orderId = location.state?.orderId || "GCROWN12345";
+
+  const { orderId: displayOrderId } = useParams(); // <-- gets orderId from URL
 
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,9 +81,10 @@ export default function TrackOrder() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await axios.get( `http://localhost:3000/gcrown/api/v1/customer/order/track/${orderId}`
-);
+        const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/track-order/${displayOrderId}`
 
+        );
+        console.log(displayOrderId)
         setOrderData(res.data);
       } catch (err) {
         console.error(err);
@@ -91,7 +95,7 @@ export default function TrackOrder() {
     };
 
     fetchOrder();
-  }, [orderId]);
+  }, [displayOrderId]);
 
 
   if (loading) return <p className="text-center mt-20">Loading order...</p>;
@@ -102,7 +106,7 @@ export default function TrackOrder() {
     <main className="min-h-screen bg-[#FBF6EA] px-4 sm:px-6 py-8 sm:py-12 font-cormorant text-[#0F241A]">
       <div className="max-w-5xl mx-auto">
         <button
-          onClick={() => navigate("/track-order")}
+          onClick={() => navigate(`/track-order/${displayOrderId}`)}
           className="flex items-center gap-2 text-[#0F241A] mb-6 hover:text-[#CBA135] transition-colors"
         >
           <ArrowLeft size={18} />
@@ -113,7 +117,7 @@ export default function TrackOrder() {
           Order Tracking
         </h1>
 
-        <OrderStatus orderData={orderData} />
+        <OrderStatus orderData={orderData} displayOrderId={displayOrderId} />
         <OrderInfo orderData={orderData} />
         <Products orderData={orderData} />
         <Services />
@@ -124,12 +128,12 @@ export default function TrackOrder() {
 
 /* ================= ORDER STATUS ================= */
 
-function OrderStatus({ orderData }) {
+function OrderStatus({ orderData, displayOrderId }) {
   return (
     <section className="mx-auto mb-8 sm:mb-14">
       <h2 className="mb-2 text-lg sm:text-xl font-semibold">Order Status</h2>
       <p className="mb-6 text-sm text-gray-600">
-        Order ID : <span className="font-medium">#{orderData.orderId}</span>
+        Order ID : <span className="font-medium">#{displayOrderId}</span>
       </p>
 
       <div className="rounded-lg border border-[#CFC7B5] bg-white px-4 sm:px-6 py-8 sm:py-10 shadow-sm">
@@ -160,8 +164,8 @@ function OrderStatus({ orderData }) {
                 {/* STEP DOT */}
                 <div
                   className={`relative z-10 mx-auto mb-3 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md border transition-all ${isCompleted
-                      ? "bg-[#C9A24D] border-[#C9A24D] shadow-md"
-                      : "bg-[#E0E0E0] border-[#CFC7B5]"
+                    ? "bg-[#C9A24D] border-[#C9A24D] shadow-md"
+                    : "bg-[#E0E0E0] border-[#CFC7B5]"
                     }`}
                 >
                   {isCompleted && <Check size={16} className="text-white" />}
@@ -209,7 +213,7 @@ function OrderInfo({ orderData }) {
 
 /* ================= PRODUCTS ================= */
 
-function Products({orderData}) {
+function Products({ orderData }) {
   return (
     <section className="mx-auto mb-12 sm:mb-16 rounded-lg border border-[#CFC7B5] bg-white shadow-sm overflow-hidden">
       <h3 className="border-b border-[#CFC7B5] px-4 sm:px-6 py-4 font-semibold text-lg">
@@ -223,18 +227,18 @@ function Products({orderData}) {
             className="flex items-center gap-4 px-4 sm:px-6 py-4 hover:bg-gray-50 transition-colors"
           >
             <img
-              src={item.img||p1}
+              src={item.img || p1}
               alt={item.productName}
               className="h-14 w-14 sm:h-16 sm:w-16 rounded object-cover flex-shrink-0"
             />
             <div className="flex-1 min-w-0">
               <p className="font-medium text-sm sm:text-base">{item.productName}</p>
-                <p className="text-xs sm:text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600">
                 {item.category || "Jewellery"} | {item.quantity} Qty.
               </p>
             </div>
             <span className="text-xs sm:text-sm text-gray-500 font-medium">
-               ₹ {item.price * item.quantity}
+              ₹ {item.price * item.quantity}
             </span>
           </div>
         ))}

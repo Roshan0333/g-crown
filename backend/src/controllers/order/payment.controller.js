@@ -174,9 +174,6 @@ export const verifyPayment = async (req, res) => {
     const newOrder = new Order(orderData);
     await newOrder.save();
 
-    // ===============================
-    // 🔴 Reduce Inventory by Carat/Purity
-    // ===============================
 
     for (const item of cartItems) {
       const product = await productModel.findById(item.productId);

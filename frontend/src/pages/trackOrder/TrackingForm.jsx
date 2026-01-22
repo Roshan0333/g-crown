@@ -3,19 +3,19 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import axios from 'axios';
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Loader2, 
-  Search, 
-  Package, 
-  AlertCircle, 
+import {
+  Loader2,
+  Search,
+  Package,
+  AlertCircle,
   ArrowRight,
-  HelpCircle 
+  HelpCircle
 } from "lucide-react";
 
 const OrderTracking = () => {
   const navigate = useNavigate();
   const [orderId, setOrderId] = useState("");
-    const [orderData, setOrderData] = useState(null);
+  const [orderData, setOrderData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,17 +36,19 @@ const OrderTracking = () => {
 
     try {
 
-      const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/${cleanId}`);
+      const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/track-order/${encodeURIComponent(orderId)}`);
+
+      console.log(res.data)
       setOrderData(res.data);
 
       // await new Promise((resolve) => setTimeout(resolve, 800));
 
       // navigate(`/track-id`);
-      
-      navigate("/track-id", { state: { orderId: cleanId, orderData: res.data } });
+
+      navigate(`/track-order/${orderId}`);
 
     }
-     catch (err) {
+    catch (err) {
       console.error(err);
       setError("Unable to find this order. Please check the ID and try again.");
     } finally {
@@ -57,15 +59,15 @@ const OrderTracking = () => {
 
   return (
     <main className="bg-[#FFF9E9] min-h-screen antialiased selection:bg-[#1C3A2C] selection:text-white">
-      
+
       {/* Dynamic Header Section */}
       <header className="relative bg-[#1C3A2C] pt-32 pb-40 px-6 overflow-hidden">
         {/* Subtle Texture Overlay */}
-        <div 
+        <div
           className="absolute inset-0 opacity-10 pointer-events-none"
           style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/diamond-upholstery.png')" }}
         />
-        
+
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -84,7 +86,7 @@ const OrderTracking = () => {
 
       {/* Interactive Tracking Card */}
       <section className="max-w-[800px] mx-auto px-6 -mt-24 relative z-20 pb-20">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-white rounded-2xl shadow-2xl shadow-black/5 p-8 md:p-12 border border-[#E5DDCC]/50"
@@ -103,8 +105,8 @@ const OrderTracking = () => {
 
           <form onSubmit={handleTrack} className="space-y-5">
             <div className="relative group">
-              <label 
-                htmlFor="order-id" 
+              <label
+                htmlFor="order-id"
                 className="text-[10px] uppercase tracking-widest font-bold text-[#1C3A2C] absolute -top-2.5 left-4 bg-white px-2 z-10"
               >
                 Order Identity
@@ -123,7 +125,7 @@ const OrderTracking = () => {
                     className="w-full border-2 border-[#1C3A2C]/10 rounded-xl pl-12 pr-4 py-4 text-lg outline-none focus:border-[#1C3A2C] transition-all bg-[#FBFBFB]"
                   />
                 </div>
-                
+
                 <button
                   type="submit"
                   disabled={isLoading}
@@ -142,7 +144,7 @@ const OrderTracking = () => {
 
             <AnimatePresence mode="wait">
               {error && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
@@ -171,7 +173,7 @@ const OrderTracking = () => {
 
       {/* Detailed Tracking View (Placeholder for visual context) */}
       {/* In production, this would be a separate route showing a timeline */}
-      
+
     </main>
   );
 };

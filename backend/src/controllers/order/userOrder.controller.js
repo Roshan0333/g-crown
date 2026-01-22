@@ -5,6 +5,7 @@ const ORDER_STEPS = ['Order Placed', 'Accepted', 'In Progress', 'On The Way', 'D
 export const getOrderById = async (req, res) => {
     try {
         const { orderId } = req.params;
+        console.log(orderId)
 
         const order = await userOrderModel.findOne({ orderId: { $regex: `^${orderId}$`, $options: 'i' } });
 

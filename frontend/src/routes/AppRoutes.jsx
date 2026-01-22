@@ -90,7 +90,9 @@ export default function AppRoutes() {
         <Route path="/faqs" element={<Faq />} />
 
         <Route path="/track-order" element={<TrackingForm />} />
-        <Route path="/track-id" element={<TrackingOrder />} />
+        <Route path="/track-order/:orderId" element={<TrackingOrder />} />
+
+       {/* <Route path="/track-id" element={<TrackingOrder />} /> */}
 
         <Route path="/cart" element={<Cart />} />
         <Route path="/favorites" element={<Favorites />} />
