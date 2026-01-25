@@ -4,49 +4,57 @@ import { ApiResponse } from "../../utils/api-response.js";
 import mongoose from "mongoose";
 
 const addItem = async (req, res) => {
-    try {
-        const { _id } = req.user;
-        const { productId, quantity = 1, purity } = req.body;
+  try {
+    const { _id, role } = req.user;
+    const { productId, quantity = 1, purity } = req.body;
 
-        const userCart = await cart.findOne({ userId: _id });
-
-        if (!userCart) {
-            const newCart = await cart.create({
-                userId: _id,
-                cart: [{ productId, quantity, purity }]
-            });
-
-            return res.status(200).json(new ApiResponse(200, newCart, "Added to cart"));
-        }
-
-        // Check if product exists in cart already
-        const existingItem = userCart.cart.find(
-            (item) => item.productId.toString() === productId && item.purity === purity
-        );
-
-        if (existingItem) {
-            // update quantity
-            existingItem.quantity = quantity;
-        } else {
-            // push new item
-            userCart.cart.push({ productId, quantity, purity });
-        }
-
-        await userCart.save();
-
-        return res.status(200).json(new ApiResponse(200, userCart, "Added to cart"));
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
     }
-    catch (err) {
-        return res.status(500).json(
-            new ApiError(500, err.message, [{ message: err.message, name: err.name }])
-        );
+
+    const userCart = await cart.findOne({ userId: _id });
+
+    if (!userCart) {
+      const newCart = await cart.create({
+        userId: _id,
+        cart: [{ productId, quantity, purity }]
+      });
+
+      return res.status(200).json(new ApiResponse(200, newCart, "Added to cart"));
     }
+
+    // Check if product exists in cart already
+    const existingItem = userCart.cart.find(
+      (item) => item.productId.toString() === productId && item.purity === purity
+    );
+
+    if (existingItem) {
+      // update quantity
+      existingItem.quantity = quantity;
+    } else {
+      // push new item
+      userCart.cart.push({ productId, quantity, purity });
+    }
+
+    await userCart.save();
+
+    return res.status(200).json(new ApiResponse(200, userCart, "Added to cart"));
+  }
+  catch (err) {
+    return res.status(500).json(
+      new ApiError(500, err.message, [{ message: err.message, name: err.name }])
+    );
+  }
 };
 
 const updateItemQuantity = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { _id, role } = req.user;
     let { productId, purity, quantity } = req.body;
+
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
+    }
 
     if (!productId) return res.status(400).json({ message: "Product ID required" });
     if (quantity === undefined) return res.status(400).json({ message: "Quantity required" });
@@ -81,54 +89,65 @@ const updateItemQuantity = async (req, res) => {
 };
 
 const clearCart = async (req, res) => {
-    try {
-        const { _id } = req.user;
-
-        const userCart = await cart.findOne({ userId: _id });
-
-        if (!userCart) {
-            return res.status(404).json(new ApiError(404, "Cart not found"));
-        }
-
-        userCart.cart = [];
-        await userCart.save();
-
-        return res.status(200).json(new ApiResponse(200, userCart, "Cart cleared"));
+  try {
+    const { _id, role } = req.user;
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
     }
-    catch (err) {
-        return res.status(500).json(
-            new ApiError(500, err.message, [{ message: err.message, name: err.name }])
-        );
+
+    const userCart = await cart.findOne({ userId: _id });
+
+    if (!userCart) {
+      return res.status(404).json(new ApiError(404, "Cart not found"));
     }
+
+    userCart.cart = [];
+    await userCart.save();
+
+    return res.status(200).json(new ApiResponse(200, userCart, "Cart cleared"));
+  }
+  catch (err) {
+    return res.status(500).json(
+      new ApiError(500, err.message, [{ message: err.message, name: err.name }])
+    );
+  }
 };
 
 const removeItem = async (req, res) => {
-    try {
-        const { _id } = req.user;
-        const { productId, purity } = req.body;
+  try {
+    const { _id, role } = req.user;
+    const { productId, purity } = req.body;
 
-        const userCart = await cart.findOne({ userId: _id });
-
-        if (!userCart) return res.status(404).json(new ApiError(404, "Cart not found"));
-
-        userCart.cart = userCart.cart.filter(
-            (item) => !(item.productId.toString() === productId && item.purity === purity)
-        );
-
-        await userCart.save();
-
-        return res.status(200).json(new ApiResponse(200, userCart, "Item removed"));
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
     }
-    catch (err) {
-        return res.status(500).json(
-            new ApiError(500, err.message, [{ message: err.message, name: err.name }])
-        );
-    }
+
+    const userCart = await cart.findOne({ userId: _id });
+
+    if (!userCart) return res.status(404).json(new ApiError(404, "Cart not found"));
+
+    userCart.cart = userCart.cart.filter(
+      (item) => !(item.productId.toString() === productId && item.purity === purity)
+    );
+
+    await userCart.save();
+
+    return res.status(200).json(new ApiResponse(200, userCart, "Item removed"));
+  }
+  catch (err) {
+    return res.status(500).json(
+      new ApiError(500, err.message, [{ message: err.message, name: err.name }])
+    );
+  }
 };
 
 const getItems = async (req, res) => {
   try {
-    const { _id } = req.user;
+    const { _id, role } = req.user;
+
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
+    }
 
     const userObjectId = new mongoose.Types.ObjectId(_id);
 

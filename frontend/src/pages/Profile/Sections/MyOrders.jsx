@@ -280,7 +280,7 @@ const MyOrders = () => {
                     </div>
                   )}
                   <button
-                    onClick={() => navigate(`/track-order/${order.displayOrderId}`)}
+                    onClick={() => navigate(`/track-order/${encodeURIComponent(order.displayOrderId)}`)}
                     className="bg-[#1B3022] text-white px-4 py-2 text-sm"
                   >
                     Track Order

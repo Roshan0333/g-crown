@@ -11,10 +11,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import p1 from "../../assets/trackingPage/p1.jpg";
-import p2 from "../../assets/trackingPage/p2.jpg";
-import p3 from "../../assets/trackingPage/p3.jpg";
-import p4 from "../../assets/trackingPage/p4.jpg";
+// import p1 from "../../assets/trackingPage/p1.jpg";
+// import p2 from "../../assets/trackingPage/p2.jpg";
+// import p3 from "../../assets/trackingPage/p3.jpg";
+// import p4 from "../../assets/trackingPage/p4.jpg";
 
 /* ================= DATA ================= */
 
@@ -59,12 +59,12 @@ const formatDate = (dateStr) => {
   });
 };
 
-const products = [
-  { img: p1, name: "Gold Earring", qty: 4 },
-  { img: p2, name: "Gold Earring", qty: 4 },
-  { img: p3, name: "Gold Earring", qty: 4 },
-  { img: p4, name: "Gold Earring", qty: 4 },
-];
+// const products = [
+//   { img: p1, name: "Gold Earring", qty: 4 },
+//   { img: p2, name: "Gold Earring", qty: 4 },
+//   { img: p3, name: "Gold Earring", qty: 4 },
+//   { img: p4, name: "Gold Earring", qty: 4 },
+// ];
 
 /* ================= MAIN ================= */
 
@@ -78,24 +78,17 @@ export default function TrackOrder() {
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        const res = await axios.get(`http://localhost:3000/gcrown/api/v1/customer/order/track-order/${displayOrderId}`
-
-        );
-        console.log(displayOrderId)
-        setOrderData(res.data);
-      } catch (err) {
-        console.error(err);
-        alert("Failed to fetch order");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrder();
-  }, [displayOrderId]);
+ useEffect(() => {
+  const fetchOrder = async () => {
+    const res = await axios.get(
+      `http://localhost:3000/gcrown/api/v1/customer/order/track-order/${encodeURIComponent(displayOrderId)}`
+    );
+    setOrderData(res.data);
+    console.log(res.data)
+    setLoading(false)
+  };
+  fetchOrder();
+}, [displayOrderId]);
 
 
   if (loading) return <p className="text-center mt-20">Loading order...</p>;

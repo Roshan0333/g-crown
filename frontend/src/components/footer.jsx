@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom"; // Use Link for SPA navigation
 import { FaFacebookF, FaInstagram, FaTwitter } from "react-icons/fa";
 import FooterBg from "../assets/footerAssests/background.png";
+import { axiosGetService } from "../services/axios"
 
 // 1. DATA CONFIGURATION (Easier to maintain or fetch from a CMS)
 const FOOTER_DATA = {
@@ -37,13 +38,63 @@ const FOOTER_DATA = {
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const [ringsList, setRing] = useState([]);
+  const [necklacesList, setNecklace] = useState([]);
+  const [earingList, setEaring] = useState([]);
+  const [braceletList, setBracelet] = useState([]);
+
+  useEffect(() => {
+    ; (
+      async () => {
+
+        let earings = [];
+        let rings = [];
+        let necklaces = [];
+        let bracelets = [];
+
+        const apiResponse = await axiosGetService("/customer/product/all");
+
+        if (!apiResponse.ok) {
+          console.log(res.data.message || "Failed to load products")
+          return;
+        }
+
+        let productList = apiResponse.data.data;
+
+        productList.forEach(item => {
+          const cat = item.category?.toLowerCase();
+
+
+          if (cat === "earing" || cat === "earings" || cat === "earring" || cat === "earrings") {
+            earings.push(item);
+          }
+          else if (cat === "ring" || cat === "rings") {
+            rings.push(item);
+          }
+          else if (cat === "necklace" || cat === "necklaces") {
+            necklaces.push(item);
+          }
+          else if (cat === "bracelet" || cat === "bracelets") {
+            bracelets.push(item);
+          }
+        });
+
+       
+        setEaring(earings);
+        setBracelet(bracelets);
+        setNecklace(necklaces);
+        setRing(rings);
+      }
+    )()
+  }, [])
+
   return (
     <footer
       aria-labelledby="footer-heading"
       className="relative w-full text-[#CBA135] overflow-hidden"
     >
       {/* BACKGROUND LAYER */}
-      <div 
+      <div
         className="absolute inset-0 bg-cover bg-center z-0"
         style={{
           backgroundImage: `
@@ -56,10 +107,10 @@ export default function Footer() {
 
       <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8 pt-16 pb-8">
         <h2 id="footer-heading" className="sr-only">Footer</h2>
-        
+
         {/* MAIN GRID */}
         <div className="grid grid-cols-1 gap-y-12 gap-x-8 sm:grid-cols-2 lg:grid-cols-4">
-          
+
           {/* BRAND SECTION */}
           <section className="flex flex-col">
             <h3 className="text-lg font-serif font-bold tracking-widest text-[#CBA135] mb-6">

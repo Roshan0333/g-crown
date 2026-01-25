@@ -11,15 +11,14 @@ const Collections = () => {
 
   useEffect(() => {
     ;(async () => {
-      const res = await axiosGetService("/customer/product/all");
+      const apiResponse = await axiosGetService("/customer/product/all");
 
-      if (!res.ok) {
-        console.log(res.data.message || "Failed to load products")
+      if (!apiResponse.ok) {
+        console.log(apiResponse.data.message || "Failed to load products")
         return;
       }
 
-      // backend format: res.data.data = Array(products)
-      const productsArray = res.data.data;
+      const productsArray = apiResponse.data.data;
 
       if (Array.isArray(productsArray)) {
         setAllProducts(productsArray);

@@ -22,7 +22,7 @@ export const trackOrder = async (req, res) => {
         productName: p.name,
         quantity: p.qty,
         price: p.price,
-        img: p.img
+        img: p.productImage
       }))
     });
   } catch (err) {

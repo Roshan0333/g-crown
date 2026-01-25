@@ -3,7 +3,11 @@ import Address from "../../models/order/Address.js";
 
 export const addAddress = async (req, res) => {
   try {
-    const { _id } = req.user; // userId from token/session
+    const { _id, role } = req.user;
+
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
+    }
 
     const {
       firstName,
@@ -51,9 +55,13 @@ export const addAddress = async (req, res) => {
 export const getAddresses = async (req, res) => {
   try {
 
-    const {_id} = req.user;
+    const { _id, role } = req.user;
 
-    const addresses = await Address.find({userId:_id}).sort({ createdAt: -1 });
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not customer"))
+    }
+
+    const addresses = await Address.find({ userId: _id }).sort({ createdAt: -1 });
     res.json(addresses);
   } catch (err) {
     res.status(500).json({ error: err.message });

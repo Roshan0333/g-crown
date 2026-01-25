@@ -22,14 +22,36 @@ const getAllProducts = async (req, res) => {
     }
 };
 
+const newArrivalProducts = async (req, res) => {
+    try{
+        let productList = await productModel.find({
+            deleted: {$ne: true},
+            status: false
+        }).sort({createdAt: -1}).lean();
+
+        if(productList.length === 0){
+            return res.status(404).json(new ApiError(404, "No New Product Arrival"));
+        }
+
+        return res.status(200).json(new ApiResponse(200, productList, "Successful"));
+    }
+    catch(err){
+        return res.status(500).json(new ApiError(500, err.message, [{message: err.message, name: err.name}]));
+    }
+}
+
 const addReview = async (req, res) => {
     try {
         const { productId } = req.query;
-        const { _id } = req.user;
+        const { _id, role } = req.user;
+
+        if (role) {
+            return res.status(401).json(new ApiError(401, "Your are not customer"))
+        }
 
         let { title, comment, rating } = req.body;
 
-        if(!title){
+        if (!title) {
             title = comment;
         }
 
@@ -44,7 +66,7 @@ const addReview = async (req, res) => {
             customerId: _id,
             name: `${userDetail.firstName} ${userDetail.lastName}`,
             email: userDetail.email,
-            title,            
+            title,
             comment,
             rating,
             media: userDetail.profileImage,
@@ -83,4 +105,4 @@ const getProductReviews = async (req, res) => {
     }
 };
 
-export { getAllProducts, addReview, getProductReviews };
+export { getAllProducts, addReview, getProductReviews, newArrivalProducts};

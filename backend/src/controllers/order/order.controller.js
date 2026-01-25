@@ -12,15 +12,35 @@ const __dirname = path.dirname(__filename);
 // Get My Orders
 
 export const getAllOrders = async (req, res) => {
+
+  const { role } = req.user;
+
+  if (role) {
+    return res.status(401).json(new ApiError(401, "Your are not Customer"));
+  }
+
   const orders = await Order.find({});
   res.json(orders);
 };
 export const getOrders = async (req, res) => {
-  const orders = await Order.find({userId: req.user._id});
+
+  const { role } = req.user;
+
+  if (role) {
+    return res.status(401).json(new ApiError(401, "Your are not Customer"));
+  }
+
+  const orders = await Order.find({ userId: req.user._id });
   res.json(orders);
 };
 
 export const createOrder = async (req, res) => {
+
+  const { role } = req.user;
+
+  if (role) {
+    return res.status(401).json(new ApiError(401, "Your are not Customer"));
+  }
 
   const displayOrderId = "GC-" + Date.now();
 
@@ -46,6 +66,13 @@ export const createOrder = async (req, res) => {
 
 // Update Status
 export const updateOrderStatus = async (req, res) => {
+
+  const { role } = req.user;
+
+  if (!role) {
+    return res.status(401).json(new ApiError(401, "No Auth"));
+  }
+
   await Order.findByIdAndUpdate(req.params.id, {
     orderStatus: req.body.status,
     statusText: req.body.statusText
@@ -159,6 +186,13 @@ export const saveOrder = async (req, res) => {
 
 export const cancelOrder = async (req, res) => {
   try {
+
+    const { role } = req.user;
+
+    if (role) {
+      return res.status(401).json(new ApiError(401, "Your are not Customer"));
+    }
+
     await Order.findByIdAndUpdate(req.params.id, {
       orderStatus: "Cancelled",   // ✅ योग्य field
       statusText: "Your order has been cancelled by user"
