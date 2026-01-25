@@ -15,10 +15,6 @@ import adminStoreRoutes from "./routers/admin/store.route.js";
 import userOrderRoutes from "./routers/order/userOrder.route.js";
 import orderRoutes from "./routers/order/order.routes.js"
 import adminOrderRoutes from "./routers/order/adminOrderRoutes.js"
-
-/* ===========================
-   SEARCH API (NEW IMPORT)
-=========================== */
 import commonSearchRoutes from "./routers/common/search.route.js";
 
 const app = express();
@@ -35,9 +31,6 @@ app.use(cookieParser());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json({ limit: '100mb' }));
 
-/* ===========================
-   EXISTING ROUTES (UNCHANGED)
-=========================== */
 app.use("/gcrown/api/v1/customer/auth", customerAuthRoutes);
 app.use("/gcrown/api/v1/customer/product", customerProductRoutes);
 app.use("/gcrown/api/v1/customer/wishlist", wishListRoutes);
@@ -51,9 +44,6 @@ app.use("/gcrown/api/v1/admin/order", adminOrderRoutes)
 
 app.use("/gcrown/api/v1/customer/order", orderRoutes);
 
-/* ===========================
-   SEARCH API ROUTE (NEW)
-=========================== */
 app.use("/gcrown/api/v1/common", commonSearchRoutes);
 
 export default app;
